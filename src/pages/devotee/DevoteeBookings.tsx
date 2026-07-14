@@ -31,7 +31,7 @@ export default function DevoteeBookings() {
       .select('*, pooja_services(name, price)')
       .eq('devotee_id', user.id)
       .order('booking_date', { ascending: false })
-    setBookings((data || []) as Booking[])
+    setBookings((data || []) as unknown as Booking[])
     setLoading(false)
   }
 
