@@ -127,6 +127,18 @@ export default function HomePage() {
         </div>
       </section>
 
+      <section className="guru-home-section">
+        <div className="page-container guru-home-grid">
+          <div className="guru-home-image"><img src="/sadguru-sri-satish-guruji.jpg" alt="Sadguru Sri Satish Guruji" loading="eager" /></div>
+          <div className="guru-home-copy">
+            <span>Spiritual guide</span>
+            <h2>Sadguru Sri Satish Guruji</h2>
+            <p>Sadguru Sri Satish Guruji is a renowned Yoga Master, spiritual guide and ardent devotee of Supreme Mother Sri Lalitha Tripura Sundari. Introduced to yoga by his father at the age of five, he became a Guru at sixteen and has since guided thousands through yoga, naturopathy, Tantra, Vedic Astrology, Astro-Yoga and Vasthu Shastra.</p>
+            <Link to="/about#sadguru-profile" className="btn-primary">Read More <ArrowRight size={16} /></Link>
+          </div>
+        </div>
+      </section>
+
       <section className="page-container quick-grid" aria-label="Temple services">
         {quickLinks.map(({ title, copy, action, href, icon: Icon }) => href === '/donate' ? (
           <button type="button" onClick={() => window.dispatchEvent(new Event('open-donation-modal'))} key={title} className="quick-card group">
@@ -189,18 +201,6 @@ export default function HomePage() {
             ))}
           </div>
         )}
-      </section>
-
-      <section className="guru-home-section">
-        <div className="page-container guru-home-grid">
-          <div className="guru-home-image"><img src="/sadguru-sri-satish-guruji.jpg" alt="Sadguru Sri Satish Guruji" loading="lazy" /></div>
-          <div className="guru-home-copy">
-            <span>Spiritual guide</span>
-            <h2>Sadguru Sri Satish Guruji</h2>
-            <p>Sadguru Sri Satish Guruji is a renowned Yoga Master, spiritual guide and ardent devotee of Supreme Mother Sri Lalitha Tripura Sundari. Introduced to yoga by his father at the age of five, he became a Guru at sixteen and has since guided thousands through yoga, naturopathy, Tantra, Vedic Astrology, Astro-Yoga and Vasthu Shastra.</p>
-            <Link to="/about#sadguru-profile" className="btn-primary">Read More <ArrowRight size={16} /></Link>
-          </div>
-        </div>
       </section>
 
       {(announcements.length > 0 || events.length > 0) && (
