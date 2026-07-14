@@ -29,7 +29,9 @@ export default function AdminSettings() {
   const onSubmit = async (data: Partial<Settings>) => {
     if (!settings) return
     setSaving(true)
-    const { error } = await supabase.from('temple_settings').update(data).eq('id', settings.id)
+    const { id, created_at, updated_at, ...updateData } = data as Settings
+    void id; void created_at; void updated_at
+    const { error } = await supabase.from('temple_settings').update(updateData).eq('id', settings.id)
     setSaving(false)
     if (error) { toast.error(error.message); return }
     toast.success('Settings saved.')

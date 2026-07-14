@@ -60,7 +60,7 @@ export default function AdminDashboard() {
         upcomingEvents: eventsRes.count || 0,
       })
 
-      setRecentBookings((recentBookRes.data || []) as Booking[])
+      setRecentBookings((recentBookRes.data || []) as unknown as Booking[])
       setRecentDonations(recentDonRes.data || [])
 
       // Simple 7-day chart data

@@ -51,7 +51,7 @@ export default function DevoteeDashboard() {
           .eq('user_id', user!.id)
           .eq('is_read', false),
       ])
-      setUpcomingBookings((bookingsRes.data || []) as Booking[])
+      setUpcomingBookings((bookingsRes.data || []) as unknown as Booking[])
       setRecentDonations(donationsRes.data || [])
       setAnnouncements(announcementsRes.data || [])
       setUnreadCount(notifRes.count || 0)

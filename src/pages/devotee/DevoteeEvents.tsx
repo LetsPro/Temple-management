@@ -28,11 +28,11 @@ export default function DevoteeEvents() {
       .eq('is_published', true)
       .order('start_datetime')
     // Filter registrations to current user only
-    const eventsWithUserReg = (data || []).map(e => ({
+    const eventsWithUserReg = (data || []).map((e: Record<string, unknown>) => ({
       ...e,
-      event_registrations: (e.event_registrations || []).filter((r: { devotee_id: string }) => r.devotee_id === user.id),
+      event_registrations: ((e.event_registrations as { devotee_id: string }[]) || []).filter(r => r.devotee_id === user.id),
     }))
-    setEvents(eventsWithUserReg as Event[])
+    setEvents(eventsWithUserReg as unknown as Event[])
     setLoading(false)
   }
 

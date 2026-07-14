@@ -27,7 +27,7 @@ export default function AdminBookings() {
       .from('bookings')
       .select('*, profiles(full_name, mobile, email), pooja_services(name)')
       .order('created_at', { ascending: false })
-    setBookings((data || []) as Booking[])
+    setBookings((data || []) as unknown as Booking[])
     setLoading(false)
   }
 
@@ -41,7 +41,7 @@ export default function AdminBookings() {
 
   const updateStatus = async (booking: Booking, status: string) => {
     setUpdating(true)
-    const { error } = await supabase.from('bookings').update({ booking_status: status, admin_notes: adminNote || booking.admin_notes }).eq('id', booking.id)
+    const { error } = await supabase.from('bookings').update({ booking_status: status as 'pending' | 'confirmed' | 'completed' | 'cancelled' | 'rescheduled', admin_notes: adminNote || booking.admin_notes }).eq('id', booking.id)
     setUpdating(false)
     if (error) { toast.error('Update failed.'); return }
     toast.success(`Booking ${status}.`)
