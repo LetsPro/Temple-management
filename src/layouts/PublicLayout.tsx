@@ -46,8 +46,7 @@ export default function PublicLayout() {
         <div className="page-container">
           <nav className="main-nav" aria-label="Main navigation">
             <Link to="/" className="brand" aria-label={`${TRUST_NAME} home`}>
-              <span className="brand-mark" aria-hidden="true">🪷</span>
-              <span className="brand-copy"><strong>Shri Tripura Sundari<br />Lalithambe Trust</strong><small><i /> Devotion · Service · Dharma <i /></small></span>
+              <img src="/trust-logo.jpg" alt="Sri Tripura Sundari Lalithambe Trust" className="header-logo" />
             </Link>
 
             <div className="desktop-nav">
@@ -102,8 +101,9 @@ function Footer() {
       <div className="footer-pattern" aria-hidden="true" />
       <div className="page-container footer-grid">
         <div className="footer-brand">
-          <div className="footer-logo">🪷</div>
-          <h3>{TRUST_NAME}</h3>
+          <div className="footer-logo-wrap">
+            <img src="/trust-logo.jpg" alt="Sri Tripura Sundari Lalithambe Trust" className="footer-logo" />
+          </div>
           <div className="gold-rule" />
           <p>Devotion · Service · Dharma<br />Serving devotees with faith and commitment.</p>
         </div>
