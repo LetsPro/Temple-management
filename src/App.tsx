@@ -15,6 +15,7 @@ import FestivalsPage from './pages/public/FestivalsPage'
 import EventDetailPage from './pages/public/EventDetailPage'
 import ContactPage from './pages/public/ContactPage'
 import MembershipPage from './pages/public/MembershipPage'
+import LegalPage from './pages/public/LegalPage'
 import LoginPage from './pages/auth/LoginPage'
 import RegisterPage from './pages/auth/RegisterPage'
 import ForgotPasswordPage from './pages/auth/ForgotPasswordPage'
@@ -74,6 +75,10 @@ function App() {
           <Route path="/donate" element={<Navigate to="/" replace />} />
           <Route path="/membership" element={<MembershipPage />} />
           <Route path="/contact" element={<ContactPage />} />
+          <Route path="/terms" element={<LegalPage type="terms" />} />
+          <Route path="/privacy" element={<LegalPage type="privacy" />} />
+          <Route path="/disclaimer" element={<LegalPage type="disclaimer" />} />
+          <Route path="/payment-terms" element={<LegalPage type="payment-terms" />} />
         </Route>
 
         {/* Auth routes */}

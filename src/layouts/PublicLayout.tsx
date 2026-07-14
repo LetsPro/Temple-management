@@ -31,6 +31,7 @@ export default function PublicLayout() {
   useEffect(() => {
     setMobileOpen(false)
     setAccountOpen(false)
+    window.scrollTo({ top: 0, behavior: 'auto' })
   }, [location.pathname])
 
   useEffect(() => {
@@ -159,6 +160,12 @@ function Footer() {
         <span className="pay-brand rupay" aria-label="RuPay">RuPay</span>
         <span className="pay-brand visa" aria-label="Visa">VISA</span>
       </div>
+      <nav className="footer-legal-links" aria-label="Legal information">
+        <Link to="/terms">Terms</Link>
+        <Link to="/privacy">Privacy Policy</Link>
+        <Link to="/disclaimer">Disclaimer</Link>
+        <Link to="/payment-terms">Payment Terms</Link>
+      </nav>
       <div className="footer-bottom">
         <span>© {new Date().getFullYear()} {TRUST_NAME}. All Rights Reserved.</span>
         <span>Powered by <a href="https://dreambuzz.in" target="_blank" rel="noopener noreferrer">DreamBuzz Solutions</a></span>
