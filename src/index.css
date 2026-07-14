@@ -265,6 +265,7 @@
 @media (max-width: 960px) {
   .main-nav { height: 78px; }
   .desktop-nav { display: none; }
+  .account-menu-button { display: none; }
   .mobile-toggle { display: block; }
   .hero-panel { min-height: 590px; }
   .hero-art { object-position: 67% center; }
@@ -283,6 +284,10 @@
   .membership-plans { grid-template-columns: 1fr 1fr; }.membership-plan-card:last-child { grid-column: 1 / -1; width: 50%; justify-self: center; }.membership-form-grid { grid-template-columns: 1fr; }
   .footer-grid > div:last-child { grid-column: auto; }
 }
+
+.mobile-menu .mobile-signin, .mobile-menu .mobile-signup { margin-top: 5px; text-align: center; }
+.mobile-menu .mobile-signin { color: #941116; border: 1px solid #d8a76b; background: #fff7e9; }
+.mobile-menu .mobile-signup { color: white; background: linear-gradient(135deg, #a80e16, #d95d0d); }
 
 @media (max-width: 700px) {
   .ornament-line { height: 7px; }

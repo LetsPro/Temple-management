@@ -77,7 +77,13 @@ export default function PublicLayout() {
               {navLinks.map(link => <Link key={link.href} to={link.href} className={location.pathname === link.href ? 'active' : ''}>{link.label}</Link>)}
               <Link to="/membership">Membership</Link>
               <button onClick={() => { setDonationOpen(true); setMobileOpen(false) }}>Donate</button>
-              {user ? <button onClick={handleSignOut}>Sign Out</button> : <Link to="/register">Create Account</Link>}
+              {user ? <>
+                <button onClick={() => { setAccountOpen(true); setMobileOpen(false) }}>My Account</button>
+                <button onClick={handleSignOut}>Sign Out</button>
+              </> : <>
+                <Link to="/login" className="mobile-signin">Sign In</Link>
+                <Link to="/register" className="mobile-signup">Sign Up</Link>
+              </>}
             </div>
           </div>
         )}
