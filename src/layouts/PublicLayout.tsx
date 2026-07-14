@@ -139,7 +139,18 @@ function Footer() {
           </div>
         </div>
       </div>
-      <div className="footer-bottom">© {new Date().getFullYear()} {TRUST_NAME}. All Rights Reserved.</div>
+      <div className="payment-trust-strip" aria-label="Accepted payment methods">
+        <span className="payment-label"><CreditCard size={15} /> Secure payments</span>
+        <span className="pay-brand upi" aria-label="UPI">UPI</span>
+        <span className="pay-brand razorpay" aria-label="Razorpay">Razorpay</span>
+        <span className="pay-brand mastercard" aria-label="Mastercard"><i /><i /></span>
+        <span className="pay-brand rupay" aria-label="RuPay">RuPay</span>
+        <span className="pay-brand visa" aria-label="Visa">VISA</span>
+      </div>
+      <div className="footer-bottom">
+        <span>© {new Date().getFullYear()} {TRUST_NAME}. All Rights Reserved.</span>
+        <span>Powered by <a href="https://dreambuzz.in" target="_blank" rel="noopener noreferrer">DreamBuzz Solutions</a></span>
+      </div>
     </footer>
   )
 }

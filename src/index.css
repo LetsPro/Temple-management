@@ -80,11 +80,12 @@
 .mobile-menu a, .mobile-menu button { text-align: left; padding: 10px 12px; border-radius: 8px; color: #3c2415; font-weight: 700; font-size: 14px; }
 .mobile-menu .active { color: #9d1515; background: #fff4e7; }
 
-.temple-home { padding-top: 18px; }
-.hero-panel { position: relative; overflow: hidden; min-height: 465px; border-radius: 28px; background: #fdf0d7; box-shadow: 0 16px 40px rgba(107, 56, 22, .1); }
+.temple-home { padding-top: 0; }
+.hero-shell { width: 100%; }
+.hero-panel { position: relative; overflow: hidden; min-height: 540px; border-radius: 0; background: #fdf0d7; box-shadow: 0 16px 40px rgba(107, 56, 22, .1); }
 .hero-art { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center right; }
 .hero-wash { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(255, 248, 233, .98) 0%, rgba(255, 248, 233, .95) 30%, rgba(255, 248, 233, .56) 49%, rgba(255, 248, 233, 0) 70%); }
-.hero-copy { position: relative; z-index: 2; width: 55%; min-height: 465px; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 50px 40px; text-align: center; }
+.hero-copy { position: relative; z-index: 2; width: 55%; min-height: 540px; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 50px max(40px, calc((100vw - 1280px) / 2)); text-align: center; }
 .hero-kicker { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; font-size: 18px; font-weight: 800; color: #30241e; }
 .hero-kicker span { width: 20px; height: 1px; background: #d37a2f; position: relative; }
 .hero-kicker span::after { content: '◆'; color: #d37a2f; font-size: 6px; position: absolute; top: -4px; }
@@ -180,7 +181,13 @@
 .gold-rule { width: 130px; height: 1px; margin: 12px auto; background: #eab64f; }
 .socials { display: flex; gap: 7px; }
 .socials a { width: 32px; height: 32px; display: grid; place-items: center; border-radius: 50%; background: rgba(255,255,255,.14); }
-.footer-bottom { position: relative; border-top: 1px solid rgba(255,255,255,.2); text-align: center; padding: 11px 20px; color: rgba(255,255,255,.72); font-size: 10px; letter-spacing: .02em; }
+.payment-trust-strip { position: relative; display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 11px; padding: 13px 20px; border-top: 1px solid rgba(255,255,255,.18); background: rgba(73,0,3,.16); }
+.payment-label { display: inline-flex; align-items: center; gap: 6px; margin-right: 4px; color: rgba(255,255,255,.7); font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; }
+.pay-brand { min-width: 54px; height: 28px; display: inline-flex; align-items: center; justify-content: center; padding: 0 9px; border-radius: 6px; background: white; box-shadow: 0 3px 10px rgba(35,0,0,.18); font-family: Arial, sans-serif; font-size: 12px; font-weight: 900; }
+.pay-brand.upi { color: #148a55; font-style: italic; }.pay-brand.razorpay { color: #246bfd; font-size: 10px; }.pay-brand.rupay { color: #153f86; font-style: italic; }.pay-brand.visa { color: #1434cb; font-size: 14px; font-style: italic; letter-spacing: .03em; }
+.pay-brand.mastercard { position: relative; min-width: 48px; padding: 0; }.pay-brand.mastercard i { width: 17px; height: 17px; border-radius: 50%; background: #eb001b; }.pay-brand.mastercard i + i { margin-left: -6px; background: rgba(247,158,27,.9); }
+.footer-bottom { position: relative; display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 6px 18px; border-top: 1px solid rgba(255,255,255,.16); text-align: center; padding: 11px 20px; color: rgba(255,255,255,.72); font-size: 10px; letter-spacing: .02em; }
+.footer-bottom a { color: #ffd273; font-weight: 800; }.footer-bottom a:hover { color: white; text-decoration: underline; }
 
 .payment-modal { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; padding: 20px; background: rgba(37, 14, 7, .68); backdrop-filter: blur(5px); }
 .payment-modal-card { width: min(720px, 100%); max-height: calc(100vh - 40px); overflow: auto; border-radius: 26px; background: #fffdf9; box-shadow: 0 25px 80px rgba(45, 12, 5, .3); }
@@ -229,7 +236,7 @@
   .hero-panel { min-height: 590px; }
   .hero-art { object-position: 67% center; }
   .hero-wash { background: linear-gradient(90deg, rgba(255,248,233,.96) 0%, rgba(255,248,233,.83) 50%, rgba(255,248,233,.2) 100%); }
-  .hero-copy { width: 64%; min-height: 590px; align-items: flex-start; text-align: left; }
+  .hero-copy { width: 64%; min-height: 590px; align-items: flex-start; text-align: left; padding-left: 36px; padding-right: 36px; }
   .hero-kicker { font-size: 16px; }
   .hero-lotus { margin-left: 15px; }
   .support-strip { grid-template-columns: 1fr 1fr; }
@@ -250,8 +257,8 @@
   .header-logo { width: min(235px, 100%); height: 59px; }
   .account-button { width: 40px; height: 40px; padding: 0; }
   .account-button span, .account-button > svg:last-child { display: none; }
-  .temple-home { padding-top: 10px; }
-  .hero-panel { min-height: 610px; border-radius: 20px; }
+  .temple-home { padding-top: 0; }
+  .hero-panel { min-height: 610px; border-radius: 0; }
   .hero-art { height: 57%; top: auto; bottom: 0; object-position: 64% center; }
   .hero-wash { background: linear-gradient(180deg, #fff8e9 0%, #fff8e9 43%, rgba(255,248,233,.77) 58%, rgba(255,248,233,0) 78%); }
   .hero-copy { width: 100%; min-height: 0; padding: 38px 19px 0; align-items: center; text-align: center; justify-content: flex-start; }

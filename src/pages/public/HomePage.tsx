@@ -97,7 +97,7 @@ export default function HomePage() {
 
   return (
     <div className="temple-home">
-      <section className="hero-shell page-container">
+      <section className="hero-shell">
         <div className="hero-panel">
           <img src="/lalithambe-hero.png" alt="Goddess Lalithambika in a golden shrine at sunrise" className="hero-art" />
           <div className="hero-wash" />
