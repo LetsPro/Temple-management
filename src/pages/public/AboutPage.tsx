@@ -14,7 +14,7 @@ export default function AboutPage() {
       <div className="relative bg-gradient-to-br from-[#2d0a06] to-[#7a1e1e] py-20 text-center text-white">
         <div className="page-container">
           <div className="text-5xl mb-4">🛕</div>
-          <h1 className="font-serif text-4xl sm:text-5xl font-bold mb-3">{settings?.temple_name || 'Sri Mahalakshmi Temple'}</h1>
+          <h1 className="font-serif text-4xl sm:text-5xl font-bold mb-3">Shri Tripura Sundari Lalithambe Trust</h1>
           <p className="text-white/70 text-lg max-w-xl mx-auto">{settings?.tagline || 'A sacred space for devotion, community and divine grace'}</p>
         </div>
       </div>
@@ -27,7 +27,7 @@ export default function AboutPage() {
               <div className="text-saffron-500 font-semibold text-sm uppercase tracking-wide mb-2">Our Story</div>
               <h2 className="text-3xl font-bold font-serif text-temple-text mb-4">Temple History</h2>
               <p className="text-temple-muted leading-relaxed whitespace-pre-line">
-                {settings?.history_text || 'Sri Mahalakshmi Temple was consecrated over 200 years ago by the great saint Swami Sivananda. Located in the heart of Mylapore, this sacred temple is dedicated to Goddess Mahalakshmi, the deity of prosperity, wisdom and auspiciousness.'}
+                {settings?.history_text || 'Shri Tripura Sundari Lalithambe Trust is devoted to Maa Lalithambike and the timeless values of devotion, service and dharma. The trust brings devotees together through daily worship, sacred sevas, festivals and community service.'}
               </p>
             </div>
             <div className="rounded-3xl overflow-hidden">

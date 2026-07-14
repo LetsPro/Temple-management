@@ -172,7 +172,7 @@ export default function BookingFlow() {
               key: razorpayKey,
               amount: order.amount,
               currency: order.currency,
-              name: 'Sri Mahalakshmi Temple',
+              name: 'Shri Tripura Sundari Lalithambe Trust',
               description: selectedService.name,
               order_id: order.id,
               handler: async (response: Record<string, string>) => {
@@ -235,7 +235,7 @@ export default function BookingFlow() {
         <div className="card text-left mb-6">
           <div className="text-center border-b border-temple-border pb-4 mb-4">
             <div className="text-2xl">🛕</div>
-            <div className="font-bold text-temple-text">Sri Mahalakshmi Temple</div>
+            <div className="font-bold text-temple-text">Shri Tripura Sundari Lalithambe Trust</div>
             <div className="text-xs text-temple-muted">Booking Confirmation</div>
           </div>
           <div className="space-y-2 text-sm">

@@ -178,7 +178,7 @@ export default function AdminDonations() {
           <div className="bg-white rounded-3xl w-full max-w-md" onClick={e => e.stopPropagation()} id="donation-receipt">
             <div className="p-6">
               <div className="flex items-center justify-between mb-4"><h3 className="font-bold">Donation Receipt</h3><button onClick={() => setSelected(null)} className="p-1.5 rounded-lg hover:bg-cream-100"><X size={18} /></button></div>
-              <div className="text-center border-b border-temple-border pb-4 mb-4"><div className="text-2xl">🛕</div><div className="font-bold">Sri Mahalakshmi Temple</div><div className="text-xs text-temple-muted">Donation Receipt</div></div>
+              <div className="text-center border-b border-temple-border pb-4 mb-4"><div className="text-2xl">🛕</div><div className="font-bold">Shri Tripura Sundari Lalithambe Trust</div><div className="text-xs text-temple-muted">Donation Receipt</div></div>
               <div className="space-y-2 text-sm mb-4">
                 {[['Receipt No.', selected.donation_number], ['Donor', selected.is_anonymous ? 'Anonymous' : selected.donor_name], ['Purpose', selected.purpose === 'Custom' ? selected.custom_purpose || 'Custom' : selected.purpose], ['Amount', `₹${selected.amount.toLocaleString('en-IN')}`], ['Status', selected.payment_status], ['Date', format(new Date(selected.created_at), 'dd MMM yyyy')]].map(([l, v]) => (
                   <div key={l} className="flex justify-between"><span className="text-temple-muted">{l}</span><span className="font-semibold capitalize">{v}</span></div>

@@ -128,7 +128,7 @@ export default function DonationsPage() {
               key: razorpayKey,
               amount: order.amount,
               currency: order.currency,
-              name: 'Sri Mahalakshmi Temple',
+              name: 'Shri Tripura Sundari Lalithambe Trust',
               description: `Donation - ${purpose}`,
               order_id: order.id,
               handler: async (response: Record<string, string>) => {
@@ -332,14 +332,14 @@ function DonationSuccess({ success, onNewDonation }: { success: DonationSuccess;
         </div>
         <h2 className="text-2xl font-bold text-temple-text mb-2">Donation Successful!</h2>
         <p className="text-temple-muted mb-8 leading-relaxed">
-          Thank you for your generous contribution. May Goddess Mahalakshmi shower her blessings on you and your family.
+          Thank you for your generous contribution. May Maa Lalithambike shower her blessings on you and your family.
         </p>
 
         {/* Receipt */}
         <div className="card text-left mb-6" id="donation-receipt">
           <div className="text-center border-b border-temple-border pb-4 mb-4">
             <div className="text-2xl mb-1">🛕</div>
-            <div className="font-bold text-temple-text">Sri Mahalakshmi Temple</div>
+            <div className="font-bold text-temple-text">Shri Tripura Sundari Lalithambe Trust</div>
             <div className="text-xs text-temple-muted">Donation Receipt</div>
           </div>
           <div className="space-y-2 text-sm">

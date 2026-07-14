@@ -156,7 +156,7 @@ export default function DevoteeBookings() {
               {/* Receipt content */}
               <div className="text-center border-b border-temple-border pb-4 mb-4">
                 <div className="text-2xl mb-1">🛕</div>
-                <div className="font-bold">Sri Mahalakshmi Temple</div>
+                <div className="font-bold">Shri Tripura Sundari Lalithambe Trust</div>
                 <div className="text-xs text-temple-muted">Booking Receipt</div>
               </div>
 

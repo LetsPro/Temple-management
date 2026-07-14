@@ -59,8 +59,8 @@ export default {
         },
       },
       fontFamily: {
-        sans: ['Inter', 'Nunito Sans', 'Poppins', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-        serif: ['Georgia', 'Times New Roman', 'serif'],
+        sans: ['Nunito Sans', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        serif: ['Cormorant Garamond', 'Georgia', 'Times New Roman', 'serif'],
       },
       boxShadow: {
         'temple': '0 4px 20px rgba(92, 51, 31, 0.08)',

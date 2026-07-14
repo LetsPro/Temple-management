@@ -82,7 +82,7 @@ export default function RegisterPage() {
           <div className="lg:hidden text-center mb-6">
             <Link to="/" className="inline-flex items-center gap-2">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-vermilion-700 to-saffron-500 flex items-center justify-center text-white text-xl">🛕</div>
-              <span className="font-bold text-temple-text">Sri Mahalakshmi Temple</span>
+              <span className="font-bold text-temple-text">Shri Tripura Sundari Lalithambe Trust</span>
             </Link>
           </div>
 

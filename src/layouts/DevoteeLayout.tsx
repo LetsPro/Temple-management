@@ -40,7 +40,7 @@ export default function DevoteeLayout() {
           <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-vermilion-700 to-saffron-500 flex items-center justify-center text-white text-lg">🛕</div>
           <div>
             <div className="font-bold text-temple-text text-sm leading-tight">Devotee Portal</div>
-            <div className="text-xs text-temple-muted">Sri Mahalakshmi Temple</div>
+            <div className="text-xs text-temple-muted">Shri Tripura Sundari Lalithambe Trust</div>
           </div>
         </Link>
       </div>

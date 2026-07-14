@@ -45,7 +45,7 @@ export default function LoginPage() {
       <div className="hidden lg:flex flex-col justify-center items-center flex-1 bg-gradient-to-br from-[#2d0a06] via-[#7a1e1e] to-[#b85c1a] p-12 text-white">
         <div className="max-w-sm text-center">
           <div className="text-6xl mb-6">🛕</div>
-          <h1 className="font-serif text-4xl font-bold mb-4">Sri Mahalakshmi Temple</h1>
+          <h1 className="font-serif text-4xl font-bold mb-4">Shri Tripura Sundari Lalithambe Trust</h1>
           <p className="text-white/70 leading-relaxed">
             Sign in to book poojas, make donations, and access your devotee portal.
           </p>
@@ -68,7 +68,7 @@ export default function LoginPage() {
           <div className="lg:hidden text-center mb-8">
             <Link to="/" className="inline-flex items-center gap-2">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-vermilion-700 to-saffron-500 flex items-center justify-center text-white text-xl">🛕</div>
-              <span className="font-bold text-temple-text">Sri Mahalakshmi Temple</span>
+              <span className="font-bold text-temple-text">Shri Tripura Sundari Lalithambe Trust</span>
             </Link>
           </div>
 

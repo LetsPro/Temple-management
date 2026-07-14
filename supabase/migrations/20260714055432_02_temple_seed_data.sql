@@ -21,7 +21,7 @@ INSERT INTO temple_settings (
   razorpay_key_id, social_media, booking_cancellation_hours, booking_advance_days
 ) VALUES (
   'a0000000-0000-0000-0000-000000000001',
-  'Sri Mahalakshmi Temple',
+  'Shri Tripura Sundari Lalithambe Trust',
   'A sacred space for devotion, community and divine grace',
   '12, Temple Street, Mylapore, Chennai - 600004, Tamil Nadu, India',
   '+91 44 2345 6789',

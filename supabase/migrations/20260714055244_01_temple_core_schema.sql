@@ -201,7 +201,7 @@ CREATE TRIGGER profiles_updated_at
 -- ============================================================
 CREATE TABLE IF NOT EXISTS temple_settings (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  temple_name text NOT NULL DEFAULT 'Sri Mahalakshmi Temple',
+  temple_name text NOT NULL DEFAULT 'Shri Tripura Sundari Lalithambe Trust',
   tagline text DEFAULT 'A sacred space for devotion, community and service',
   logo_url text DEFAULT '',
   favicon_url text DEFAULT '',

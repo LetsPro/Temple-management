@@ -80,7 +80,7 @@ export default function DevoteeDonations() {
 
               <div className="text-center border-b border-temple-border pb-4 mb-4">
                 <div className="text-3xl mb-1">🛕</div>
-                <div className="font-bold text-temple-text text-lg">Sri Mahalakshmi Temple</div>
+                <div className="font-bold text-temple-text text-lg">Shri Tripura Sundari Lalithambe Trust</div>
                 <div className="text-xs text-temple-muted">Donation Receipt</div>
               </div>
 
