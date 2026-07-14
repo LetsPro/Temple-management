@@ -1,0 +1,78 @@
+/** @type {import('tailwindcss').Config} */
+export default {
+  content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
+  theme: {
+    extend: {
+      colors: {
+        vermilion: {
+          50: '#fdf2f2',
+          100: '#fce8e8',
+          200: '#f9d0d0',
+          300: '#f3a8a8',
+          400: '#ea7575',
+          500: '#dc4747',
+          600: '#c82d2d',
+          700: '#a52a2a',
+          800: '#8a2424',
+          900: '#712222',
+          950: '#3d0f0f',
+        },
+        saffron: {
+          50: '#fff7ed',
+          100: '#ffedd5',
+          200: '#fed7aa',
+          300: '#fdba74',
+          400: '#fb923c',
+          500: '#e76f24',
+          600: '#c2570f',
+          700: '#9a3d0d',
+          800: '#7c3210',
+          900: '#642b10',
+          950: '#371306',
+        },
+        gold: {
+          50: '#fffbeb',
+          100: '#fef3c7',
+          200: '#fde68a',
+          300: '#fcd34d',
+          400: '#fbbf24',
+          500: '#f5b942',
+          600: '#d97706',
+          700: '#b45309',
+          800: '#92400e',
+          900: '#78350f',
+          950: '#451a03',
+        },
+        cream: {
+          50: '#fffdf9',
+          100: '#fff8ed',
+          200: '#fff0d4',
+          300: '#ffe4b0',
+          400: '#ffd07e',
+          500: '#ffbc4d',
+        },
+        temple: {
+          text: '#3C2415',
+          muted: '#6d5140',
+          border: '#e8d5c4',
+          bg: '#FFF8ED',
+        },
+      },
+      fontFamily: {
+        sans: ['Inter', 'Nunito Sans', 'Poppins', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        serif: ['Georgia', 'Times New Roman', 'serif'],
+      },
+      boxShadow: {
+        'temple': '0 4px 20px rgba(92, 51, 31, 0.08)',
+        'temple-md': '0 8px 30px rgba(92, 51, 31, 0.12)',
+        'temple-lg': '0 16px 50px rgba(92, 51, 31, 0.16)',
+      },
+      backgroundImage: {
+        'hero-gradient': 'linear-gradient(135deg, #651e18, #a52a2a 52%, #e76f24)',
+        'saffron-gradient': 'linear-gradient(135deg, #e76f24, #f5b942)',
+        'brand-gradient': 'linear-gradient(135deg, #a52a2a, #e76f24)',
+      },
+    },
+  },
+  plugins: [],
+}

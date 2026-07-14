@@ -1,0 +1,135 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --color-vermilion: #A52A2A;
+    --color-saffron: #E76F24;
+    --color-gold: #F5B942;
+    --color-cream: #FFF8ED;
+    --color-text: #3C2415;
+    --color-muted: #6d5140;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply font-sans text-temple-text bg-cream-100;
+    font-size: 15px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    line-height: 1.2;
+    font-weight: 700;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  ::selection {
+    background-color: rgba(231, 111, 36, 0.2);
+    color: #3C2415;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm text-white bg-gradient-to-r from-vermilion-700 to-saffron-500 hover:from-vermilion-800 hover:to-saffron-600 shadow-md hover:shadow-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-saffron-500 focus:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm text-vermilion-700 border border-vermilion-200 bg-white hover:bg-cream-100 hover:border-vermilion-300 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-vermilion-300 focus:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed;
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-medium text-sm text-temple-muted hover:text-temple-text hover:bg-cream-100 transition-all duration-200;
+  }
+
+  .card {
+    @apply bg-white rounded-2xl border border-temple-border shadow-temple p-6;
+  }
+
+  .input-field {
+    @apply w-full px-4 py-2.5 rounded-xl border border-temple-border bg-white text-temple-text placeholder:text-temple-muted/60 focus:outline-none focus:ring-2 focus:ring-saffron-400 focus:border-saffron-400 transition-all duration-200 text-sm;
+  }
+
+  .label {
+    @apply block text-sm font-semibold text-temple-text mb-1.5;
+  }
+
+  .badge-normal {
+    @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-100;
+  }
+
+  .badge-important {
+    @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-100;
+  }
+
+  .badge-urgent {
+    @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-50 text-red-700 border border-red-100;
+  }
+
+  .page-container {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  .section-title {
+    @apply text-2xl sm:text-3xl font-bold text-temple-text;
+  }
+}
+
+@layer utilities {
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.3s ease-in-out;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .animate-slide-in {
+    animation: slideIn 0.3s ease-out;
+  }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(-12px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  .rangoli-bg {
+    background-image:
+      radial-gradient(circle at 10% 15%, rgba(245,185,66,0.12), transparent 30rem),
+      radial-gradient(circle at 90% 85%, rgba(231,111,36,0.08), transparent 25rem),
+      radial-gradient(circle at 50% 50%, rgba(165,42,42,0.04), transparent 20rem);
+  }
+}
+
+/* Print styles for receipts */
+@media print {
+  .no-print { display: none !important; }
+  .print-only { display: block !important; }
+  body { background: white; }
+  .card { box-shadow: none; border: 1px solid #ddd; }
+}
+
+.print-only { display: none; }
