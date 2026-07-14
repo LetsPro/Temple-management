@@ -75,6 +75,8 @@ export default function HomePage() {
   const [services, setServices] = useState<Service[]>([])
   const [events, setEvents] = useState<Event[]>([])
   const [announcements, setAnnouncements] = useState<Announcement[]>([])
+  const [announcementIndex, setAnnouncementIndex] = useState(0)
+  const [announcementPaused, setAnnouncementPaused] = useState(false)
   const [gallery, setGallery] = useState<GalleryImage[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -94,6 +96,18 @@ export default function HomePage() {
     }
     load()
   }, [])
+
+  useEffect(() => {
+    if (announcements.length < 2 || announcementPaused) return
+    const timer = window.setInterval(() => {
+      setAnnouncementIndex(current => (current + 1) % announcements.length)
+    }, 3000)
+    return () => window.clearInterval(timer)
+  }, [announcements.length, announcementPaused])
+
+  useEffect(() => {
+    if (announcementIndex >= announcements.length) setAnnouncementIndex(0)
+  }, [announcementIndex, announcements.length])
 
   return (
     <div className="temple-home">
@@ -187,12 +201,19 @@ export default function HomePage() {
             {announcements.length > 0 && (
               <div>
                 <div className="section-heading"><span>Temple news</span><h2>Latest Announcements</h2></div>
-                <div className="announcement-list">
-                  {announcements.map(announcement => (
-                    <article key={announcement.id}>
+                <div className="announcement-carousel" onMouseEnter={() => setAnnouncementPaused(true)} onMouseLeave={() => setAnnouncementPaused(false)} onFocus={() => setAnnouncementPaused(true)} onBlur={event => !event.currentTarget.contains(event.relatedTarget) && setAnnouncementPaused(false)}>
+                  <div className="announcement-viewport">
+                    <div className="announcement-track" style={{ transform: `translateX(-${announcementIndex * 100}%)` }}>
+                    {announcements.map((announcement, index) => (
+                    <article key={announcement.id} aria-hidden={index !== announcementIndex}>
                       <BellRing size={18} /><div><h3>{announcement.title}</h3><p>{announcement.content}</p></div>
                     </article>
                   ))}
+                    </div>
+                  </div>
+                  {announcements.length > 1 && <div className="announcement-dots" aria-label="Announcement navigation">
+                    {announcements.map((announcement, index) => <button key={announcement.id} type="button" className={index === announcementIndex ? 'active' : ''} onClick={() => setAnnouncementIndex(index)} aria-label={`Show announcement ${index + 1}`} aria-current={index === announcementIndex ? 'true' : undefined} />)}
+                  </div>}
                 </div>
               </div>
             )}

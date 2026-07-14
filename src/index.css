@@ -63,12 +63,12 @@
 .brand { display: flex; align-items: center; min-width: 300px; }
 .header-logo { display: block; width: 300px; height: 76px; object-fit: contain; object-position: left center; mix-blend-mode: multiply; }
 .desktop-nav { display: flex; align-self: stretch; align-items: center; gap: 24px; }
-.desktop-nav a { height: 100%; display: flex; align-items: center; position: relative; color: #2e241f; font-size: 13px; font-weight: 700; white-space: nowrap; }
+.desktop-nav a { height: 100%; display: flex; align-items: center; position: relative; color: #2e241f; font-size: 15px; font-weight: 700; white-space: nowrap; }
 .desktop-nav a::after { content: ''; position: absolute; left: 50%; right: 50%; bottom: 15px; height: 2px; background: #a80e16; transition: left .2s, right .2s; }
 .desktop-nav a:hover, .desktop-nav a.active { color: #9d1515; }
 .desktop-nav a:hover::after, .desktop-nav a.active::after { left: 0; right: 0; }
 .nav-actions { display: flex; align-items: center; gap: 8px; }
-.membership-button, .donate-button { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 40px; padding: 10px 15px; border-radius: 999px; font-size: 12px; font-weight: 800; white-space: nowrap; }
+.membership-button, .donate-button { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 40px; padding: 10px 15px; border-radius: 999px; font-size: 14px; font-weight: 800; white-space: nowrap; }
 .membership-button { color: #971217; border: 1px solid #d8a76b; background: #fff7e9; }
 .membership-button:hover { color: #7d0e12; background: #ffedcf; }
 .donate-button { color: white; background: linear-gradient(135deg, #a80e16, #d95d0d); box-shadow: 0 6px 16px rgba(168, 14, 22, .18); }
@@ -84,7 +84,7 @@
 .mobile-toggle { display: none; padding: 9px; color: #8e1615; }
 .mobile-menu { border-top: 1px solid #efe2d4; background: white; }
 .mobile-menu .page-container { display: flex; flex-direction: column; gap: 2px; padding-top: 10px; padding-bottom: 12px; }
-.mobile-menu a, .mobile-menu button { text-align: left; padding: 10px 12px; border-radius: 8px; color: #3c2415; font-weight: 700; font-size: 14px; }
+.mobile-menu a, .mobile-menu button { text-align: left; padding: 11px 12px; border-radius: 8px; color: #3c2415; font-weight: 700; font-size: 16px; }
 .mobile-menu .active { color: #9d1515; background: #fff4e7; }
 
 .temple-home { padding-top: 0; }
@@ -150,11 +150,19 @@
 
 .warm-section { padding: 70px 0; background: #fff6e9; border-top: 1px solid #f1ddc2; border-bottom: 1px solid #f1ddc2; }
 .community-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 55px; }
-.announcement-list, .event-list { display: grid; gap: 12px; margin-top: 25px; }
-.announcement-list article { display: flex; gap: 13px; padding: 17px; background: white; border-radius: 14px; border: 1px solid #eee0d2; }
-.announcement-list article > svg { flex: 0 0 auto; color: #dc6416; margin-top: 2px; }
-.announcement-list h3, .event-card h3 { font-size: 14px; color: #3b2720; margin-bottom: 4px; }
-.announcement-list p, .event-card p { color: #79665b; font-size: 12px; line-height: 1.45; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.event-list { display: grid; gap: 12px; margin-top: 25px; }
+.announcement-carousel { margin-top: 25px; }
+.announcement-viewport { overflow: hidden; border-radius: 18px; }
+.announcement-track { display: flex; transition: transform .7s cubic-bezier(.22,.61,.36,1); will-change: transform; }
+.announcement-track article { min-width: 100%; display: flex; gap: 16px; min-height: 132px; padding: 24px; background: white; border: 1px solid #eee0d2; border-radius: 18px; }
+.announcement-track article > svg { width: 23px; height: 23px; flex: 0 0 auto; color: #dc6416; margin-top: 2px; }
+.announcement-track h3 { color: #3b2720; margin-bottom: 7px; font-size: 18px; line-height: 1.35; }
+.announcement-track p { color: #79665b; font-size: 15px; line-height: 1.6; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.announcement-dots { display: flex; justify-content: center; gap: 8px; margin-top: 15px; }
+.announcement-dots button { width: 9px; height: 9px; border-radius: 999px; background: #dfc7ac; transition: width .25s ease, background .25s ease; }
+.announcement-dots button.active { width: 28px; background: #a41518; }
+.event-card h3 { font-size: 16px; color: #3b2720; margin-bottom: 4px; }
+.event-card p { color: #79665b; font-size: 14px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .event-card { display: grid; grid-template-columns: 54px 1fr auto; align-items: center; gap: 14px; padding: 14px; background: white; border: 1px solid #eee0d2; border-radius: 14px; }
 .event-card time { display: grid; place-items: center; align-content: center; height: 58px; border-radius: 12px; color: #9d1515; background: #fff0e3; }
 .event-card time strong { font-size: 20px; line-height: 1; }
@@ -229,7 +237,7 @@
 
 @media (max-width: 1180px) {
   .desktop-nav { gap: 14px; }
-  .desktop-nav a { font-size: 12px; }
+  .desktop-nav a { font-size: 13px; }
   .brand { min-width: 245px; }
   .header-logo { width: 245px; height: 67px; }
   .quick-grid { grid-template-columns: repeat(3, 1fr); }
