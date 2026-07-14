@@ -65,6 +65,7 @@ export default function PublicLayout() {
             <div className="nav-actions">
               <Link to="/membership" className="membership-button">Membership</Link>
               <button onClick={() => setDonationOpen(true)} className="donate-button"><Heart size={16} /> Donate</button>
+              <button onClick={() => setAccountOpen(true)} className="account-menu-button" aria-label="Open My Account" title="My Account"><Menu size={21} /></button>
               <button className="mobile-toggle" onClick={() => setMobileOpen(!mobileOpen)} aria-label="Toggle menu" aria-expanded={mobileOpen}>
                 {mobileOpen ? <X size={23} /> : <Menu size={23} />}
               </button>
@@ -83,8 +84,6 @@ export default function PublicLayout() {
           </div>
         )}
       </header>
-
-      <button onClick={() => setAccountOpen(true)} className="account-edge-button" aria-label="Open My Account" title="My Account"><Menu size={22} /><span>My Account</span></button>
 
       <main className="flex-1"><Outlet /></main>
       <DonationModal open={donationOpen} onClose={() => setDonationOpen(false)} />

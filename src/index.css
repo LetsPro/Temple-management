@@ -73,9 +73,8 @@
 .membership-button:hover { color: #7d0e12; background: #ffedcf; }
 .donate-button { color: white; background: linear-gradient(135deg, #a80e16, #d95d0d); box-shadow: 0 6px 16px rgba(168, 14, 22, .18); }
 .donate-button:hover { transform: translateY(-1px); }
-.account-edge-button { position: fixed; z-index: 70; top: 132px; right: 0; display: flex; align-items: center; gap: 8px; padding: 11px 10px 11px 13px; color: white; background: linear-gradient(145deg, #941116, #c34a10); border-radius: 15px 0 0 15px; box-shadow: -7px 8px 24px rgba(83, 18, 10, .25); }
-.account-edge-button span { max-width: 0; overflow: hidden; font-size: 11px; font-weight: 800; white-space: nowrap; transition: max-width .2s ease; }
-.account-edge-button:hover span, .account-edge-button:focus-visible span { max-width: 78px; }
+.account-menu-button { width: 40px; height: 40px; display: inline-grid; place-items: center; flex: 0 0 auto; color: white; background: #8f1116; border-radius: 11px; box-shadow: 0 6px 16px rgba(143,17,22,.18); }
+.account-menu-button:hover { background: #741014; }
 .account-button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; color: white; background: #a80e16; border-radius: 999px; padding: 11px 17px; font-size: 12px; font-weight: 800; white-space: nowrap; box-shadow: 0 6px 16px rgba(168, 14, 22, .18); }
 .account-button:hover { background: #8c0f14; transform: translateY(-1px); }
 .user-menu-wrap { position: relative; }
@@ -265,9 +264,9 @@
   .brand { min-width: 0; max-width: calc(100vw - 130px); }
   .header-logo { width: min(235px, 100%); height: 59px; }
   .membership-button, .donate-button { min-height: 37px; padding: 9px 11px; font-size: 11px; }
+  .nav-actions > .membership-button, .nav-actions > .donate-button { display: none; }
   .donate-button svg { display: none; }
-  .account-edge-button { top: 96px; padding: 10px; }
-  .account-edge-button span { display: none; }
+  .account-menu-button { width: 37px; height: 37px; }
   .temple-home { padding-top: 0; }
   .hero-panel { min-height: 610px; border-radius: 0; }
   .hero-art { height: 57%; top: auto; bottom: 0; object-position: 64% center; }
