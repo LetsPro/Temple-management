@@ -13,7 +13,6 @@ import PoojaServicesPage from './pages/public/PoojaServicesPage'
 import PoojaServiceDetailPage from './pages/public/PoojaServiceDetailPage'
 import FestivalsPage from './pages/public/FestivalsPage'
 import EventDetailPage from './pages/public/EventDetailPage'
-import GalleryPage from './pages/public/GalleryPage'
 import ContactPage from './pages/public/ContactPage'
 import MembershipPage from './pages/public/MembershipPage'
 import LoginPage from './pages/auth/LoginPage'
@@ -38,7 +37,6 @@ import AdminBookings from './pages/admin/AdminBookings'
 import AdminDonations from './pages/admin/AdminDonations'
 import AdminEvents from './pages/admin/AdminEvents'
 import AdminAnnouncements from './pages/admin/AdminAnnouncements'
-import AdminGallery from './pages/admin/AdminGallery'
 import AdminSettings from './pages/admin/AdminSettings'
 import AdminReports from './pages/admin/AdminReports'
 import AdminMemberships from './pages/admin/AdminMemberships'
@@ -70,11 +68,11 @@ function App() {
           <Route path="/about" element={<AboutPage />} />
           <Route path="/poojas" element={<PoojaServicesPage />} />
           <Route path="/poojas/:slug" element={<PoojaServiceDetailPage />} />
+          <Route path="/book/:serviceId" element={<div className="page-container py-10"><BookingFlow /></div>} />
           <Route path="/festivals" element={<FestivalsPage />} />
           <Route path="/festivals/:slug" element={<EventDetailPage />} />
           <Route path="/donate" element={<Navigate to="/" replace />} />
           <Route path="/membership" element={<MembershipPage />} />
-          <Route path="/gallery" element={<GalleryPage />} />
           <Route path="/contact" element={<ContactPage />} />
         </Route>
 
@@ -109,7 +107,6 @@ function App() {
           <Route path="memberships" element={<AdminMemberships />} />
           <Route path="events" element={<AdminEvents />} />
           <Route path="announcements" element={<AdminAnnouncements />} />
-          <Route path="gallery" element={<AdminGallery />} />
           <Route path="reports" element={<AdminReports />} />
           <Route path="settings" element={<AdminSettings />} />
         </Route>

@@ -4,7 +4,6 @@ import { Clock, Users, Calendar, ChevronLeft, Star, CheckCircle, Info } from 'lu
 import { supabase } from '../../lib/supabase'
 import type { Database } from '../../lib/database.types'
 import { Skeleton } from '../../components/ui/Skeleton'
-import { useAuth } from '../../contexts/AuthContext'
 
 type Service = Database['public']['Tables']['pooja_services']['Row']
 type Slot = Database['public']['Tables']['pooja_service_slots']['Row']
@@ -12,7 +11,6 @@ type Slot = Database['public']['Tables']['pooja_service_slots']['Row']
 export default function PoojaServiceDetailPage() {
   const { slug } = useParams()
   const navigate = useNavigate()
-  const { user } = useAuth()
   const [service, setService] = useState<Service | null>(null)
   const [slots, setSlots] = useState<Slot[]>([])
   const [loading, setLoading] = useState(true)
@@ -47,11 +45,7 @@ export default function PoojaServiceDetailPage() {
   if (!service) return null
 
   const handleBook = () => {
-    if (!user) {
-      navigate(`/login?redirect=/portal/book/${service.id}`)
-    } else {
-      navigate(`/portal/book/${service.id}`)
-    }
+    navigate(`/book/${service.id}`)
   }
 
   const daysMap = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
@@ -149,11 +143,7 @@ export default function PoojaServiceDetailPage() {
             <button onClick={handleBook} className="btn-primary w-full justify-center py-3 text-base mb-3">
               Book Now <Calendar size={16} />
             </button>
-            {!user && (
-              <p className="text-center text-xs text-temple-muted">
-                <Link to="/login" className="text-vermilion-600 font-medium">Sign in</Link> or <Link to="/register" className="text-vermilion-600 font-medium">register</Link> to book
-              </p>
-            )}
+            <p className="text-center text-xs text-temple-muted">Guest checkout available. No account required.</p>
 
             <div className="border-t border-temple-border mt-4 pt-4 space-y-3 text-sm">
               <h5 className="font-semibold text-temple-text">Available Slots</h5>

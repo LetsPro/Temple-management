@@ -270,7 +270,10 @@ export interface Database {
         Row: {
           id: string
           booking_number: string
-          devotee_id: string
+          devotee_id: string | null
+          guest_name: string
+          guest_email: string
+          guest_mobile: string
           service_id: string
           booking_date: string
           slot_id: string | null
@@ -289,7 +292,10 @@ export interface Database {
         Insert: {
           id?: string
           booking_number?: string
-          devotee_id?: string
+          devotee_id?: string | null
+          guest_name?: string
+          guest_email?: string
+          guest_mobile?: string
           service_id: string
           booking_date: string
           slot_id?: string | null
@@ -305,7 +311,10 @@ export interface Database {
         }
         Update: {
           booking_number?: string
-          devotee_id?: string
+          devotee_id?: string | null
+          guest_name?: string
+          guest_email?: string
+          guest_mobile?: string
           service_id?: string
           booking_date?: string
           slot_id?: string | null

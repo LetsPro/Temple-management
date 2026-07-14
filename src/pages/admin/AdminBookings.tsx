@@ -34,7 +34,7 @@ export default function AdminBookings() {
   useEffect(() => { load() }, [])
 
   const filtered = bookings.filter(b => {
-    const matchSearch = !search || (b.profiles?.full_name || '').toLowerCase().includes(search.toLowerCase()) || b.booking_number.includes(search) || (b.pooja_services?.name || '').toLowerCase().includes(search.toLowerCase())
+    const matchSearch = !search || (b.profiles?.full_name || b.guest_name || '').toLowerCase().includes(search.toLowerCase()) || b.booking_number.includes(search) || (b.pooja_services?.name || '').toLowerCase().includes(search.toLowerCase())
     const matchStatus = statusFilter === 'all' || b.booking_status === statusFilter
     return matchSearch && matchStatus
   })
@@ -53,7 +53,7 @@ export default function AdminBookings() {
 
   const exportCSV = () => {
     const header = 'Booking No,Devotee,Service,Date,Time,Participants,Amount,Payment,Status'
-    const rows = filtered.map(b => `${b.booking_number},${b.profiles?.full_name || ''},${b.pooja_services?.name || ''},${b.booking_date},${b.slot_time},${b.participant_count},${b.total_amount},${b.payment_status},${b.booking_status}`)
+    const rows = filtered.map(b => `${b.booking_number},${b.profiles?.full_name || b.guest_name || ''},${b.pooja_services?.name || ''},${b.booking_date},${b.slot_time},${b.participant_count},${b.total_amount},${b.payment_status},${b.booking_status}`)
     const csv = [header, ...rows].join('\n')
     const blob = new Blob([csv], { type: 'text/csv' })
     const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = 'bookings.csv'; a.click(); URL.revokeObjectURL(url)
@@ -101,8 +101,8 @@ export default function AdminBookings() {
                   <tr key={b.id} className="hover:bg-cream-100/30 transition-colors">
                     <td className="py-3 pr-4 font-mono text-xs text-vermilion-600 font-bold">{b.booking_number}</td>
                     <td className="py-3 pr-4">
-                      <div className="font-medium text-temple-text">{b.profiles?.full_name}</div>
-                      <div className="text-xs text-temple-muted">{b.profiles?.mobile}</div>
+                      <div className="font-medium text-temple-text">{b.profiles?.full_name || b.guest_name}</div>
+                      <div className="text-xs text-temple-muted">{b.profiles?.mobile || b.guest_mobile}</div>
                     </td>
                     <td className="py-3 pr-4 text-temple-text">{b.pooja_services?.name}</td>
                     <td className="py-3 pr-4">
@@ -132,7 +132,7 @@ export default function AdminBookings() {
               <div key={b.id} className="card" onClick={() => { setSelected(b); setAdminNote(b.admin_notes || '') }}>
                 <div className="flex items-start justify-between gap-2">
                   <div>
-                    <div className="font-bold text-temple-text text-sm">{b.profiles?.full_name}</div>
+                    <div className="font-bold text-temple-text text-sm">{b.profiles?.full_name || b.guest_name}</div>
                     <div className="text-xs text-saffron-600 font-medium mt-0.5">{b.booking_number}</div>
                     <div className="text-xs text-temple-muted mt-1">{b.pooja_services?.name} · {format(new Date(b.booking_date), 'dd MMM')} · {b.slot_time}</div>
                   </div>
@@ -158,7 +158,7 @@ export default function AdminBookings() {
               </div>
 
               <div className="space-y-2 text-sm mb-5">
-                {[['Booking No.', selected.booking_number], ['Devotee', selected.profiles?.full_name || ''], ['Mobile', selected.profiles?.mobile || ''], ['Service', selected.pooja_services?.name || ''], ['Date', format(new Date(selected.booking_date), 'dd MMMM yyyy')], ['Time', selected.slot_time], ['Participants', `${selected.participant_count}`], ['Amount', `₹${selected.total_amount.toLocaleString('en-IN')}`], ['Payment', selected.payment_status], ['Status', selected.booking_status]].map(([l, v]) => (
+                {[['Booking No.', selected.booking_number], ['Devotee', selected.profiles?.full_name || selected.guest_name || ''], ['Mobile', selected.profiles?.mobile || selected.guest_mobile || ''], ['Email', selected.profiles?.email || selected.guest_email || ''], ['Service', selected.pooja_services?.name || ''], ['Date', format(new Date(selected.booking_date), 'dd MMMM yyyy')], ['Time', selected.slot_time], ['Participants', `${selected.participant_count}`], ['Amount', `₹${selected.total_amount.toLocaleString('en-IN')}`], ['Payment', selected.payment_status], ['Status', selected.booking_status]].map(([l, v]) => (
                   <div key={l} className="flex justify-between"><span className="text-temple-muted">{l}</span><span className="font-semibold capitalize">{v}</span></div>
                 ))}
               </div>

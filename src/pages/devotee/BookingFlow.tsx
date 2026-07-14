@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { Calendar, Clock, Users, ArrowRight, ArrowLeft, CheckCircle, CreditCard, User, Plus, Minus } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
-import { useForm } from 'react-hook-form'
+import { payWithRazorpay } from '../../lib/razorpay'
 import { format, addDays, isBefore, startOfDay } from 'date-fns'
 import type { Database } from '../../lib/database.types'
 import toast from 'react-hot-toast'
@@ -32,17 +32,18 @@ export default function BookingFlow() {
   const [specialNotes, setSpecialNotes] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [bookingResult, setBookingResult] = useState<{ booking_number: string } | null>(null)
-  const [razorpayKey, setRazorpayKey] = useState('')
   const [blockedDates, setBlockedDates] = useState<string[]>([])
+  const [guest, setGuest] = useState({ name: profile?.full_name || '', email: profile?.email || '', mobile: profile?.mobile || '' })
 
   useEffect(() => {
-    supabase.from('temple_settings').select('razorpay_key_id').maybeSingle().then(({ data }) => {
-      if (data?.razorpay_key_id) setRazorpayKey(data.razorpay_key_id)
-    })
     if (!serviceId) {
       supabase.from('pooja_services').select('*').eq('is_active', true).order('display_order').then(({ data }) => setServices(data || []))
     }
   }, [serviceId])
+
+  useEffect(() => {
+    if (profile) setGuest({ name: profile.full_name, email: profile.email, mobile: profile.mobile })
+  }, [profile])
 
   useEffect(() => {
     if (serviceId) {
@@ -112,12 +113,16 @@ export default function BookingFlow() {
   }
 
   const handleParticipantsNext = () => {
+    if (!user && (!guest.name.trim() || !guest.email.includes('@') || guest.mobile.replace(/\D/g, '').length < 10)) {
+      toast.error('Enter your name, email and valid mobile number for guest checkout.')
+      return
+    }
     if (participants.some(p => !p.name.trim())) { toast.error('Please enter all participant names.'); return }
     setStep('review')
   }
 
   const processBooking = async () => {
-    if (!selectedService || !selectedSlot || !selectedDate || !user) return
+    if (!selectedService || !selectedSlot || !selectedDate) return
     setSubmitting(true)
 
     try {
@@ -135,8 +140,13 @@ export default function BookingFlow() {
         return
       }
 
-      const { data: booking, error: bookingErr } = await supabase.from('bookings').insert({
-        devotee_id: user.id,
+      const bookingId = crypto.randomUUID()
+      const bookingPayload = {
+        id: bookingId,
+        devotee_id: user?.id || null,
+        guest_name: user ? '' : guest.name.trim(),
+        guest_email: user ? '' : guest.email.trim(),
+        guest_mobile: user ? '' : guest.mobile.trim(),
         service_id: selectedService.id,
         booking_date: selectedDate,
         slot_id: selectedSlot.id,
@@ -146,66 +156,25 @@ export default function BookingFlow() {
         booking_status: 'pending',
         participant_count: participantCount,
         special_notes: specialNotes,
-      }).select().single()
-
-      if (bookingErr || !booking) throw new Error(bookingErr?.message || 'Booking failed')
+      }
+      let bookingNumber = ''
+      if (user) {
+        const { data: booking, error: bookingErr } = await supabase.from('bookings').insert(bookingPayload).select('booking_number').single()
+        if (bookingErr || !booking) throw new Error(bookingErr?.message || 'Booking failed')
+        bookingNumber = booking.booking_number
+      } else {
+        const { error: bookingErr } = await supabase.from('bookings').insert(bookingPayload)
+        if (bookingErr) throw new Error(bookingErr.message || 'Guest booking failed')
+      }
 
       // Insert participants
       await supabase.from('booking_participants').insert(
-        participants.map(p => ({ booking_id: booking.id, name: p.name, gotram: p.gotram || '', nakshatra: p.nakshatra || '' }))
+        participants.map(p => ({ booking_id: bookingId, name: p.name, gotram: p.gotram || '', nakshatra: p.nakshatra || '' }))
       )
 
-      // Payment
-      if (razorpayKey) {
-      const env = (import.meta as ImportMeta & { env?: Record<string, string> }).env
-      const supabaseUrl = env?.VITE_SUPABASE_URL
-      const supabaseKey = env?.VITE_SUPABASE_ANON_KEY
-        const orderRes = await fetch(`${supabaseUrl}/functions/v1/create-razorpay-order`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${supabaseKey}` },
-          body: JSON.stringify({ amount: selectedService.price, currency: 'INR', receipt: booking.booking_number }),
-        })
-
-        if (orderRes.ok) {
-          const order = await orderRes.json()
-          await new Promise<void>((resolve, reject) => {
-            const options = {
-              key: razorpayKey,
-              amount: order.amount,
-              currency: order.currency,
-              name: 'Shri Tripura Sundari Lalithambe Trust',
-              description: selectedService.name,
-              order_id: order.id,
-              handler: async (response: Record<string, string>) => {
-                await supabase.from('bookings').update({ payment_status: 'paid', booking_status: 'confirmed' }).eq('id', booking.id)
-                await supabase.from('payments').insert({
-                  payment_type: 'booking',
-                  reference_id: booking.id,
-                  user_id: user.id,
-                  razorpay_order_id: order.id,
-                  razorpay_payment_id: response.razorpay_payment_id,
-                  razorpay_signature: response.razorpay_signature,
-                  amount: selectedService.price,
-                  currency: 'INR',
-                  payment_status: 'paid',
-                  paid_at: new Date().toISOString(),
-                })
-                resolve()
-              },
-              modal: { ondismiss: () => reject(new Error('cancelled')) },
-              prefill: { name: profile?.full_name, email: profile?.email, contact: profile?.mobile },
-              theme: { color: '#A52A2A' },
-            }
-            // @ts-ignore
-            const rzp = new window.Razorpay(options)
-            rzp.open()
-          })
-        }
-      } else {
-        await supabase.from('bookings').update({ payment_status: 'paid', booking_status: 'confirmed' }).eq('id', booking.id)
-      }
-
-      setBookingResult({ booking_number: booking.booking_number })
+      const payer = user && profile ? { name: profile.full_name, email: profile.email, mobile: profile.mobile } : guest
+      const payment = await payWithRazorpay({ paymentType: 'booking', referenceId: bookingId, title: 'Shri Tripura Sundari Lalithambe Trust', description: selectedService.name, prefill: { name: payer.name, email: payer.email, contact: payer.mobile } })
+      setBookingResult({ booking_number: payment.booking_number || bookingNumber || bookingId.slice(0, 8).toUpperCase() })
       setStep('success')
     } catch (err: unknown) {
       const e = err as Error
@@ -249,7 +218,7 @@ export default function BookingFlow() {
         </div>
         <div className="flex gap-3 justify-center">
           <button onClick={() => window.print()} className="btn-secondary text-sm">Print Receipt</button>
-          <button onClick={() => navigate('/portal/bookings')} className="btn-primary text-sm">View Bookings</button>
+          <button onClick={() => navigate(user ? '/portal/bookings' : '/poojas')} className="btn-primary text-sm">{user ? 'View Bookings' : 'Back to Sevas'}</button>
         </div>
       </div>
     )
@@ -360,6 +329,16 @@ export default function BookingFlow() {
               </div>
             </div>
           </div>
+
+          {!user && <div className="card mb-4">
+            <div className="font-semibold text-sm text-temple-text mb-3">Guest checkout details</div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <label><span className="label text-xs">Full Name *</span><input className="input-field text-sm" value={guest.name} onChange={event => setGuest(current => ({ ...current, name: event.target.value }))} /></label>
+              <label><span className="label text-xs">Mobile Number *</span><input className="input-field text-sm" value={guest.mobile} onChange={event => setGuest(current => ({ ...current, mobile: event.target.value }))} /></label>
+              <label className="sm:col-span-2"><span className="label text-xs">Email Address *</span><input type="email" className="input-field text-sm" value={guest.email} onChange={event => setGuest(current => ({ ...current, email: event.target.value }))} /></label>
+            </div>
+            <p className="text-xs text-temple-muted mt-3">Your confirmation and payment receipt will use these details. No account is required.</p>
+          </div>}
 
           <div className="space-y-4 mb-4">
             {participants.map((p, i) => (

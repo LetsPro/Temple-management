@@ -1,6 +1,6 @@
 import { supabase } from './supabase'
 
-type PaymentType = 'donation' | 'membership'
+type PaymentType = 'booking' | 'donation' | 'membership'
 type CheckoutPrefill = { name: string; email?: string; contact: string }
 type PaymentResponse = { razorpay_order_id: string; razorpay_payment_id: string; razorpay_signature: string }
 
@@ -45,5 +45,5 @@ export async function payWithRazorpay(input: {
     body: { payment_type: input.paymentType, reference_id: input.referenceId, ...response },
   })
   if (verifyError || !verified?.verified) throw new Error(verified?.error || verifyError?.message || 'Payment verification failed.')
-  return response
+  return { ...response, booking_number: verified.booking_number as string | undefined }
 }

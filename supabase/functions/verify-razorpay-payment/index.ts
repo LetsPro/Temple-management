@@ -9,7 +9,7 @@ Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: cors })
   try {
     const { payment_type, reference_id, razorpay_order_id, razorpay_payment_id, razorpay_signature } = await req.json()
-    if (!['donation', 'membership'].includes(payment_type) || !reference_id || !razorpay_order_id || !razorpay_payment_id || !razorpay_signature) return json({ error: 'Missing verification data' }, 400)
+    if (!['booking', 'donation', 'membership'].includes(payment_type) || !reference_id || !razorpay_order_id || !razorpay_payment_id || !razorpay_signature) return json({ error: 'Missing verification data' }, 400)
 
     const secret = Deno.env.get('RAZORPAY_KEY_SECRET')
     if (!secret) return json({ error: 'Razorpay is not configured' }, 503)
@@ -25,11 +25,14 @@ Deno.serve(async (req: Request) => {
     await admin.from('payments').update({ razorpay_payment_id, razorpay_signature, payment_status: 'paid', paid_at: paidAt }).eq('id', payment.id)
     if (payment_type === 'donation') {
       await admin.from('donations').update({ payment_status: 'paid' }).eq('id', reference_id)
-    } else {
+    } else if (payment_type === 'membership') {
       const { data: membership } = await admin.from('memberships').select('plan_id').eq('id', reference_id).single()
       const { data: plan } = await admin.from('membership_plans').select('duration_months').eq('id', membership?.plan_id).single()
       const expires = new Date(); expires.setMonth(expires.getMonth() + Number(plan?.duration_months || 0))
       await admin.from('memberships').update({ payment_status: 'paid', status: 'active', starts_at: paidAt, expires_at: expires.toISOString() }).eq('id', reference_id)
+    } else {
+      const { data: booking } = await admin.from('bookings').update({ payment_status: 'paid', booking_status: 'confirmed' }).eq('id', reference_id).select('booking_number').single()
+      return json({ verified: true, booking_number: booking?.booking_number })
     }
     return json({ verified: true })
   } catch (error) {

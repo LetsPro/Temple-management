@@ -65,6 +65,7 @@ export function DonationModal({ open, onClose }: { open: boolean; onClose: () =>
       <div className="payment-modal-card">
         <div className="modal-header"><div><span>Sacred offering</span><h2 id="donation-title">Make a Donation</h2></div><button onClick={onClose} aria-label="Close donation"><X /></button></div>
         <div className="modal-body">
+          {!user && <p className="guest-checkout-note">Guest checkout is available. You can donate securely without creating an account.</p>}
           <label className="label">Choose donation purpose</label>
           <div className="purpose-grid">{purposes.map(item => <button key={item.id} onClick={() => setPurpose(item.name)} className={purpose === item.name ? 'selected' : ''}><b>{item.icon}</b><span><strong>{item.name}</strong><small>{item.description}</small></span></button>)}</div>
           <label className="label mt-5">Offering amount</label>

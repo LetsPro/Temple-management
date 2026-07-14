@@ -22,7 +22,6 @@ import { Skeleton } from '../../components/ui/Skeleton'
 type Service = Database['public']['Tables']['pooja_services']['Row']
 type Event = Database['public']['Tables']['events']['Row']
 type Announcement = Database['public']['Tables']['announcements']['Row']
-type GalleryImage = Database['public']['Tables']['gallery_images']['Row']
 
 const TRUST_NAME = 'Shri Tripura Sundari Lalithambe Trust'
 
@@ -77,21 +76,18 @@ export default function HomePage() {
   const [announcements, setAnnouncements] = useState<Announcement[]>([])
   const [announcementIndex, setAnnouncementIndex] = useState(0)
   const [announcementPaused, setAnnouncementPaused] = useState(false)
-  const [gallery, setGallery] = useState<GalleryImage[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     async function load() {
-      const [servicesRes, eventsRes, announcementsRes, galleryRes] = await Promise.all([
+      const [servicesRes, eventsRes, announcementsRes] = await Promise.all([
         supabase.from('pooja_services').select('*').eq('is_featured', true).eq('is_active', true).order('display_order').limit(3),
         supabase.from('events').select('*').eq('is_published', true).gte('end_datetime', new Date().toISOString()).order('start_datetime').limit(2),
         supabase.from('announcements').select('*').eq('is_published', true).order('created_at', { ascending: false }).limit(3),
-        supabase.from('gallery_images').select('*').eq('is_active', true).order('created_at', { ascending: false }).limit(5),
       ])
       setServices(servicesRes.data || [])
       setEvents(eventsRes.data || [])
       setAnnouncements(announcementsRes.data || [])
-      setGallery(galleryRes.data || [])
       setLoading(false)
     }
     load()
@@ -195,6 +191,18 @@ export default function HomePage() {
         )}
       </section>
 
+      <section className="guru-home-section">
+        <div className="page-container guru-home-grid">
+          <div className="guru-home-image"><img src="/sadguru-sri-satish-guruji.jpg" alt="Sadguru Sri Satish Guruji" loading="lazy" /></div>
+          <div className="guru-home-copy">
+            <span>Spiritual guide</span>
+            <h2>Sadguru Sri Satish Guruji</h2>
+            <p>Sadguru Sri Satish Guruji is a renowned Yoga Master, spiritual guide and ardent devotee of Supreme Mother Sri Lalitha Tripura Sundari. Introduced to yoga by his father at the age of five, he became a Guru at sixteen and has since guided thousands through yoga, naturopathy, Tantra, Vedic Astrology, Astro-Yoga and Vasthu Shastra.</p>
+            <Link to="/about#sadguru-profile" className="btn-primary">Read More <ArrowRight size={16} /></Link>
+          </div>
+        </div>
+      </section>
+
       {(announcements.length > 0 || events.length > 0) && (
         <section className="warm-section">
           <div className="page-container community-grid">
@@ -225,19 +233,6 @@ export default function HomePage() {
                 </div>
               </div>
             )}
-          </div>
-        </section>
-      )}
-
-      {gallery.length > 0 && (
-        <section className="page-container content-section">
-          <div className="section-heading centered-heading"><span>Divine moments</span><h2>Temple Gallery</h2></div>
-          <div className="gallery-mosaic">
-            {gallery.map((image, index) => (
-              <Link to="/gallery" key={image.id} className={index === 0 ? 'gallery-feature' : ''}>
-                <img src={image.image_url} alt={image.caption || 'Temple celebration'} loading="lazy" />
-              </Link>
-            ))}
           </div>
         </section>
       )}

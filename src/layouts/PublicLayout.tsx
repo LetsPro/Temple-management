@@ -8,11 +8,9 @@ const TRUST_NAME = 'Shri Tripura Sundari Lalithambe Trust'
 
 const navLinks = [
   { href: '/', label: 'Home' },
-  { href: '/about', label: 'About Temple' },
+  { href: '/about', label: 'About' },
   { href: '/poojas', label: 'Sevas / Pooja Booking' },
   { href: '/festivals', label: 'Events' },
-  { href: '/gallery', label: 'Gallery' },
-  { href: '/contact', label: 'Contact' },
 ]
 
 export default function PublicLayout() {
@@ -132,7 +130,7 @@ function Footer() {
         </div>
         <div>
           <h4>Quick Links</h4>
-          <Link to="/about">› About Temple</Link>
+          <Link to="/about">› About</Link>
           <Link to="/poojas">› Sevas & Poojas</Link>
           <button type="button" onClick={() => window.dispatchEvent(new Event('open-donation-modal'))}>› Donations</button>
           <Link to="/membership">› Membership</Link>
