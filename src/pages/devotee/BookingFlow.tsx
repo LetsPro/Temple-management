@@ -31,6 +31,7 @@ export default function BookingFlow() {
   const [participants, setParticipants] = useState<Participant[]>([{ name: profile?.full_name || '' }])
   const [specialNotes, setSpecialNotes] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const [termsAccepted, setTermsAccepted] = useState(false)
   const [bookingResult, setBookingResult] = useState<{ booking_number: string } | null>(null)
   const [blockedDates, setBlockedDates] = useState<string[]>([])
   const [guest, setGuest] = useState({ name: profile?.full_name || '', email: profile?.email || '', mobile: profile?.mobile || '' })
@@ -123,6 +124,7 @@ export default function BookingFlow() {
 
   const processBooking = async () => {
     if (!selectedService || !selectedSlot || !selectedDate) return
+    if (!termsAccepted) return toast.error('Please read and accept the Terms and Payment Terms.')
     setSubmitting(true)
 
     try {
@@ -414,7 +416,9 @@ export default function BookingFlow() {
             </div>
           </div>
 
-          <button onClick={processBooking} disabled={submitting} className="btn-primary w-full justify-center py-3 text-base">
+          <label className="checkout-consent"><input type="checkbox" checked={termsAccepted} onChange={event => setTermsAccepted(event.target.checked)} /><span>I have read and agree to the <a href="/terms" target="_blank" rel="noopener noreferrer">Terms</a> and <a href="/payment-terms" target="_blank" rel="noopener noreferrer">Payment Terms</a>.</span></label>
+
+          <button onClick={processBooking} disabled={submitting || !termsAccepted} className="btn-primary w-full justify-center py-3 text-base">
             <CreditCard size={16} />
             {submitting ? 'Processing...' : `Confirm & Pay ₹${selectedService.price.toLocaleString('en-IN')}`}
           </button>

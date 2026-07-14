@@ -258,6 +258,9 @@
 .purpose-grid b { font-size: 24px; }.purpose-grid span { display: grid; }.purpose-grid strong { font-size: 12px; color: #34231b; }.purpose-grid small { font-size: 10px; color: #806a5e; }
 .amount-row { display: flex; flex-wrap: wrap; gap: 7px; }.amount-row button { padding: 8px 12px; border: 1px solid #e5d4c5; border-radius: 10px; background: white; font-size: 12px; font-weight: 800; }.amount-row button.selected { color: white; background: #9d1515; border-color: #9d1515; }
 .modal-footer { position: sticky; bottom: 0; border-top: 1px solid #eadfd4; background: white; }.modal-footer > div { display: grid; }.modal-footer small { color: #7f685d; font-size: 10px; }.modal-footer strong { color: #951416; font-size: 22px; }
+.checkout-consent { display: flex; align-items: flex-start; gap: 10px; margin: 18px 0; padding: 13px 14px; border: 1px solid #ead2ad; border-radius: 12px; background: #fff7e7; color: #5f4b41; font-size: 12px; line-height: 1.5; }
+.checkout-consent input { flex: 0 0 auto; margin-top: 3px; accent-color: #9d1515; }
+.checkout-consent a { color: #9d1515; font-weight: 800; text-decoration: underline; text-underline-offset: 2px; }
 
 .account-drawer-layer { position: fixed; inset: 0; z-index: 110; background: rgba(35, 12, 5, .55); backdrop-filter: blur(3px); }
 .account-drawer { position: absolute; inset: 0 0 0 auto; width: min(410px, 92vw); display: flex; flex-direction: column; padding: 25px; background: #fffdf9; box-shadow: -20px 0 60px rgba(51, 18, 5, .2); animation: drawerIn .28s ease-out; }

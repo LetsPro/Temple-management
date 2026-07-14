@@ -20,6 +20,7 @@ export default function MembershipPage() {
   const [submitting, setSubmitting] = useState(false)
   const [signingIn, setSigningIn] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
+  const [termsAccepted, setTermsAccepted] = useState(false)
   const [login, setLogin] = useState({ email: '', password: '' })
   const [form, setForm] = useState({ full_name: '', spouse_name: '', date_of_birth: '', rashi: '', nakshatra: '', address: '', mobile: '', declaration_accepted: false })
 
@@ -55,6 +56,7 @@ export default function MembershipPage() {
     if (!user) return toast.error('Please sign in before applying for membership.')
     if (!form.full_name || !form.date_of_birth || !form.address || form.mobile.replace(/\D/g, '').length < 10) return toast.error('Complete all required membership details.')
     if (!form.declaration_accepted) return toast.error('Please accept the declaration.')
+    if (!termsAccepted) return toast.error('Please read and accept the Terms and Payment Terms.')
     if (activePlan.id === 'annual' || activePlan.id === 'half-yearly' || activePlan.id === 'quarterly') return toast.error('Membership plans must be activated in the database before payment.')
     setSubmitting(true)
     try {
@@ -70,7 +72,7 @@ export default function MembershipPage() {
     <section className="membership-hero"><div className="page-container"><span>Devotion · Service · Belonging</span><h1>Patron Membership</h1><p>Join the Trust family and participate more deeply in sacred sevas, celebrations and community service.</p></div></section>
     <section className="page-container py-14">
       <div className="section-heading centered-heading"><span>Choose your membership</span><h2>Membership plans</h2><p>Benefits and fees are based on the supplied Trust membership form.</p></div>
-      <div className="membership-plans">{plans.map((plan, index) => <article key={plan.id} className="membership-plan-card">{index === 0 && <em>Most complete</em>}<Crown /><h3>{plan.name}</h3><strong>₹{plan.amount.toLocaleString('en-IN')}</strong><span>{plan.duration_months === 12 ? '1 year' : `${plan.duration_months} months`}</span><ul>{plan.benefits.map(benefit => <li key={benefit}><Check />{benefit}</li>)}</ul><button type="button" onClick={() => setActivePlan(plan)} className="btn-primary membership-join">Join</button></article>)}</div>
+      <div className="membership-plans">{plans.map((plan, index) => <article key={plan.id} className="membership-plan-card">{index === 0 && <em>Most complete</em>}<Crown /><h3>{plan.name}</h3><strong>₹{plan.amount.toLocaleString('en-IN')}</strong><span>{plan.duration_months === 12 ? '1 year' : `${plan.duration_months} months`}</span><ul>{plan.benefits.map(benefit => <li key={benefit}><Check />{benefit}</li>)}</ul><button type="button" onClick={() => { setActivePlan(plan); setTermsAccepted(false) }} className="btn-primary membership-join">Join</button></article>)}</div>
     </section>
     {activePlan && <div className="payment-modal" role="dialog" aria-modal="true" aria-labelledby="membership-modal-title" onMouseDown={event => event.target === event.currentTarget && setActivePlan(null)}>
       <div className="payment-modal-card membership-join-modal">
@@ -94,8 +96,9 @@ export default function MembershipPage() {
             <label className="sm:col-span-2"><span className="label">Address *</span><textarea className="input-field" rows={3} value={form.address} onChange={event => set('address', event.target.value)} /></label>
           </div>
           <label className="declaration"><input type="checkbox" checked={form.declaration_accepted} onChange={event => set('declaration_accepted', event.target.checked)} /><span>I declare that the information above is correct to the best of my knowledge.</span></label>
+          <label className="checkout-consent"><input type="checkbox" checked={termsAccepted} onChange={event => setTermsAccepted(event.target.checked)} /><span>I have read and agree to the <a href="/terms" target="_blank" rel="noopener noreferrer">Terms</a> and <a href="/payment-terms" target="_blank" rel="noopener noreferrer">Payment Terms</a>.</span></label>
           <div className="secure-note"><ShieldCheck /><div><strong>Secure online payment</strong><small>Your subscription activates after payment verification.</small></div></div>
-          <button onClick={join} disabled={submitting} className="btn-primary w-full py-3.5 text-base"><CreditCard /> {submitting ? 'Processing membership...' : `Continue · ₹${activePlan.amount.toLocaleString('en-IN')}`}</button>
+          <button onClick={join} disabled={submitting || !termsAccepted} className="btn-primary w-full py-3.5 text-base"><CreditCard /> {submitting ? 'Processing membership...' : `Continue · ₹${activePlan.amount.toLocaleString('en-IN')}`}</button>
         </div>}
       </div>
     </div>}

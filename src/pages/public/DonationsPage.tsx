@@ -25,6 +25,7 @@ export function DonationModal({ open, onClose }: { open: boolean; onClose: () =>
   const [mobile, setMobile] = useState('')
   const [anonymous, setAnonymous] = useState(false)
   const [submitting, setSubmitting] = useState(false)
+  const [termsAccepted, setTermsAccepted] = useState(false)
 
   useEffect(() => {
     supabase.from('donation_purposes').select('id,name,description,icon').eq('is_active', true).order('display_order').then(({ data }) => {
@@ -40,11 +41,15 @@ export function DonationModal({ open, onClose }: { open: boolean; onClose: () =>
     document.addEventListener('keydown', close); document.body.style.overflow = 'hidden'
     return () => { document.removeEventListener('keydown', close); document.body.style.overflow = '' }
   }, [open, onClose])
+  useEffect(() => {
+    if (open) setTermsAccepted(false)
+  }, [open])
 
   if (!open) return null
   const finalAmount = customAmount ? Number(customAmount) : amount
 
   const donate = async () => {
+    if (!termsAccepted) return toast.error('Please read and accept the Terms and Payment Terms.')
     if (!finalAmount || finalAmount < 1) return toast.error('Enter a valid donation amount.')
     if (!anonymous && (!name.trim() || mobile.replace(/\D/g, '').length < 10)) return toast.error('Enter your name and valid mobile number.')
     setSubmitting(true)
@@ -73,8 +78,9 @@ export function DonationModal({ open, onClose }: { open: boolean; onClose: () =>
           <input type="number" min="1" value={customAmount} onChange={e => setCustomAmount(e.target.value)} className="input-field mt-2" placeholder="Or enter a custom amount" />
           <label className="flex items-center gap-2 mt-5 text-sm font-semibold"><input type="checkbox" checked={anonymous} onChange={e => setAnonymous(e.target.checked)} /> Donate anonymously</label>
           {!anonymous && <div className="grid sm:grid-cols-2 gap-3 mt-4"><input value={name} onChange={e => setName(e.target.value)} className="input-field" placeholder="Full name" /><input value={mobile} onChange={e => setMobile(e.target.value)} className="input-field" placeholder="Mobile number" /><input value={email} onChange={e => setEmail(e.target.value)} className="input-field sm:col-span-2" type="email" placeholder="Email address (optional)" /></div>}
+          <label className="checkout-consent"><input type="checkbox" checked={termsAccepted} onChange={event => setTermsAccepted(event.target.checked)} /><span>I have read and agree to the <a href="/terms" target="_blank" rel="noopener noreferrer">Terms</a> and <a href="/payment-terms" target="_blank" rel="noopener noreferrer">Payment Terms</a>.</span></label>
         </div>
-        <div className="modal-footer"><div><small>Total offering</small><strong>₹{finalAmount.toLocaleString('en-IN')}</strong></div><button onClick={donate} disabled={submitting} className="btn-primary"><CreditCard size={17} /> {submitting ? 'Opening payment...' : 'Donate Now'}</button></div>
+        <div className="modal-footer"><div><small>Total offering</small><strong>₹{finalAmount.toLocaleString('en-IN')}</strong></div><button onClick={donate} disabled={submitting || !termsAccepted} className="btn-primary"><CreditCard size={17} /> {submitting ? 'Opening payment...' : 'Donate Now'}</button></div>
       </div>
     </div>
   )
