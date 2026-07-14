@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import {
   LayoutDashboard, Users, BookOpen, Calendar, Heart, Megaphone,
-  Image, Settings, BarChart3, LogOut, Menu, X, ChevronRight, FileText
+  Image, Settings, BarChart3, LogOut, Menu, X, ChevronRight, FileText, BadgeCheck
 } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 
@@ -12,6 +12,7 @@ const navItems = [
   { href: '/admin/poojas', label: 'Poojas & Sevas', icon: BookOpen },
   { href: '/admin/bookings', label: 'Bookings', icon: Calendar },
   { href: '/admin/donations', label: 'Donations', icon: Heart },
+  { href: '/admin/memberships', label: 'Memberships', icon: BadgeCheck },
   { href: '/admin/events', label: 'Events', icon: Calendar },
   { href: '/admin/announcements', label: 'Announcements', icon: Megaphone },
   { href: '/admin/gallery', label: 'Gallery', icon: Image },

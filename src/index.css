@@ -182,6 +182,36 @@
 .socials a { width: 32px; height: 32px; display: grid; place-items: center; border-radius: 50%; background: rgba(255,255,255,.14); }
 .footer-bottom { position: relative; border-top: 1px solid rgba(255,255,255,.2); text-align: center; padding: 11px 20px; color: rgba(255,255,255,.72); font-size: 10px; letter-spacing: .02em; }
 
+.payment-modal { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; padding: 20px; background: rgba(37, 14, 7, .68); backdrop-filter: blur(5px); }
+.payment-modal-card { width: min(720px, 100%); max-height: calc(100vh - 40px); overflow: auto; border-radius: 26px; background: #fffdf9; box-shadow: 0 25px 80px rgba(45, 12, 5, .3); }
+.modal-header, .modal-footer { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 20px 24px; }
+.modal-header { color: white; background: linear-gradient(120deg, #8c0d13, #bf3612); }
+.modal-header span, .eyebrow { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .18em; color: #ffd27e; }
+.modal-header h2 { font-family: 'Cormorant Garamond', serif; font-size: 30px; line-height: 1; }
+.modal-header button { padding: 7px; border-radius: 50%; background: rgba(255,255,255,.13); }
+.modal-body { padding: 24px; }
+.purpose-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 9px; }
+.purpose-grid button { display: flex; align-items: center; gap: 10px; text-align: left; padding: 11px; border: 1px solid #ead9ca; border-radius: 13px; background: white; }
+.purpose-grid button.selected { border-color: #a41518; background: #fff1e8; box-shadow: 0 0 0 1px #a41518; }
+.purpose-grid b { font-size: 24px; }.purpose-grid span { display: grid; }.purpose-grid strong { font-size: 12px; color: #34231b; }.purpose-grid small { font-size: 10px; color: #806a5e; }
+.amount-row { display: flex; flex-wrap: wrap; gap: 7px; }.amount-row button { padding: 8px 12px; border: 1px solid #e5d4c5; border-radius: 10px; background: white; font-size: 12px; font-weight: 800; }.amount-row button.selected { color: white; background: #9d1515; border-color: #9d1515; }
+.modal-footer { position: sticky; bottom: 0; border-top: 1px solid #eadfd4; background: white; }.modal-footer > div { display: grid; }.modal-footer small { color: #7f685d; font-size: 10px; }.modal-footer strong { color: #951416; font-size: 22px; }
+
+.account-drawer-layer { position: fixed; inset: 0; z-index: 110; background: rgba(35, 12, 5, .55); backdrop-filter: blur(3px); }
+.account-drawer { position: absolute; inset: 0 0 0 auto; width: min(410px, 92vw); display: flex; flex-direction: column; padding: 25px; background: #fffdf9; box-shadow: -20px 0 60px rgba(51, 18, 5, .2); animation: drawerIn .28s ease-out; }
+@keyframes drawerIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
+.drawer-head { display: flex; justify-content: space-between; align-items: center; padding-bottom: 20px; border-bottom: 1px solid #eadfd3; }.drawer-head span { color: #d45f12; text-transform: uppercase; font-size: 10px; font-weight: 800; letter-spacing: .18em; }.drawer-head h2 { font-family: 'Cormorant Garamond', serif; color: #8d1215; font-size: 32px; }.drawer-head button { color: #8d1215; }
+.drawer-profile { display: grid; justify-items: center; padding: 28px 10px 22px; }.drawer-profile > div { width: 68px; height: 68px; display: grid; place-items: center; border-radius: 50%; color: white; background: linear-gradient(135deg,#9d1515,#e16916); font-size: 25px; font-weight: 800; }.drawer-profile strong { margin-top: 10px; }.drawer-profile span { font-size: 11px; color: #7b665c; }
+.account-drawer nav { display: grid; gap: 6px; }.account-drawer nav a { display: flex; align-items: center; gap: 12px; padding: 13px; border-radius: 12px; color: #4a362c; font-size: 13px; font-weight: 700; }.account-drawer nav a:hover { color: #9d1515; background: #fff0e3; }.account-drawer nav svg, .drawer-signout svg { width: 18px; }
+.drawer-signout { margin-top: auto; display: flex; align-items: center; justify-content: center; gap: 9px; padding: 12px; border-radius: 12px; color: #b91c1c; background: #fff1f1; font-weight: 800; font-size: 13px; }
+.drawer-guest { margin: auto 0; text-align: center; display: grid; justify-items: center; gap: 12px; }.drawer-guest > svg { color: #c96017; }.drawer-guest h3 { font-family: 'Cormorant Garamond', serif; font-size: 29px; color: #8d1215; }.drawer-guest p { color: #756157; font-size: 13px; max-width: 290px; }.drawer-guest a { width: 100%; }
+
+.membership-hero { padding: 82px 0; text-align: center; color: white; background: linear-gradient(110deg, rgba(112,7,12,.96), rgba(174,32,10,.9)), url('/lalithambe-hero.png') center/cover; }.membership-hero span { color: #ffd27a; text-transform: uppercase; font-size: 11px; letter-spacing: .2em; font-weight: 800; }.membership-hero h1 { font-family: 'Cormorant Garamond', serif; font-size: clamp(48px, 7vw, 76px); line-height: 1; }.membership-hero p { max-width: 650px; margin: 12px auto 0; color: rgba(255,255,255,.78); }
+.membership-plans { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; align-items: start; }.membership-plans > button { position: relative; display: flex; flex-direction: column; align-items: center; text-align: center; padding: 28px 22px; border: 1px solid #ead9c7; border-radius: 21px; background: white; box-shadow: 0 8px 27px rgba(84,42,20,.07); }.membership-plans > button.selected { border-color: #a41518; box-shadow: 0 12px 34px rgba(157,21,21,.14), 0 0 0 2px #a41518; }.membership-plans em { position: absolute; top: -11px; padding: 5px 13px; border-radius: 999px; color: white; background: #a41518; font-size: 9px; font-style: normal; font-weight: 800; text-transform: uppercase; letter-spacing: .1em; }.membership-plans svg { color: #d69322; }.membership-plans h3 { margin-top: 9px; font-family: 'Cormorant Garamond', serif; color: #8e1415; font-size: 25px; }.membership-plans > button > strong { color: #351f16; font-size: 29px; }.membership-plans > button > span { color: #806b60; font-size: 11px; }.membership-plans ul { width: 100%; display: grid; gap: 8px; margin: 20px 0; text-align: left; }.membership-plans li, .membership-benefits li { display: flex; align-items: flex-start; gap: 7px; color: #715e54; font-size: 11px; line-height: 1.4; }.membership-plans li svg, .membership-benefits svg { width: 14px; height: 14px; flex: 0 0 auto; color: #cf641a; }.membership-plans > button > b { margin-top: auto; color: #9d1515; font-size: 12px; }
+.membership-form-section { padding: 72px 0; background: #fff4e5; border-top: 1px solid #f0ddc4; }.membership-form-grid { display: grid; grid-template-columns: .8fr 1.2fr; gap: 54px; align-items: start; }.membership-form-grid h2 { font-family: 'Cormorant Garamond', serif; color: #8f1315; font-size: 42px; line-height: 1; margin: 10px 0; }.membership-form-grid > div:first-child > p { color: #756157; font-size: 13px; }.secure-note { display: flex; gap: 10px; margin-top: 25px; padding: 14px; border: 1px solid #eacda7; border-radius: 13px; background: rgba(255,255,255,.6); }.secure-note svg { color: #c76116; }.secure-note div { display: grid; }.secure-note small { color: #7d685d; font-size: 10px; }
+.membership-form { padding: 26px; border: 1px solid #ead8c5; border-radius: 22px; background: white; box-shadow: 0 13px 36px rgba(91,47,21,.08); }.selected-plan { display: flex; justify-content: space-between; gap: 15px; padding: 13px; margin-bottom: 20px; border-radius: 12px; background: #fff0e2; color: #7e1214; font-size: 12px; }.declaration { display: flex; align-items: flex-start; gap: 9px; margin: 18px 0; font-size: 12px; color: #665248; }.signin-notice { padding: 15px; margin-bottom: 16px; border-radius: 13px; text-align: center; background: #fff7e9; }.signin-notice p { margin-bottom: 10px; color: #765f54; font-size: 12px; }
+.membership-profile-card .membership-badge { width: 47px; height: 47px; display: grid; place-items: center; border-radius: 13px; color: #9d1515; background: #ffe8bd; }.membership-status { padding: 5px 10px; border-radius: 999px; font-size: 10px; text-transform: uppercase; font-weight: 800; }.membership-status.active { color: #166534; background: #dcfce7; }.membership-profile-card .grid > div { padding: 12px; border-radius: 11px; background: #fff8ed; }.membership-profile-card .grid small, .membership-profile-card .grid strong { display: block; }.membership-profile-card .grid small { color: #806b60; font-size: 10px; }.membership-profile-card .grid strong { color: #3b281f; font-size: 13px; }
+
 @media (max-width: 1180px) {
   .desktop-nav { gap: 14px; }
   .desktop-nav a { font-size: 12px; }
@@ -209,6 +239,7 @@
   .feature-grid { grid-template-columns: repeat(2, 1fr); }
   .feature-grid > :last-child { grid-column: 1 / -1; max-width: 50%; width: 100%; justify-self: center; }
   .footer-grid { grid-template-columns: repeat(2, 1fr); }
+  .membership-plans { grid-template-columns: 1fr 1fr; }.membership-plans > button:last-child { grid-column: 1 / -1; width: 50%; justify-self: center; }.membership-form-grid { grid-template-columns: 1fr; }
   .footer-grid > div:last-child { grid-column: auto; }
 }
 
@@ -246,6 +277,7 @@
   .footer-brand { text-align: left; }
   .footer-logo-wrap { margin-left: 0; }
   .gold-rule { margin-left: 0; }
+  .payment-modal { padding: 0; place-items: end center; }.payment-modal-card { max-height: 94vh; border-radius: 23px 23px 0 0; }.purpose-grid { grid-template-columns: 1fr; }.modal-footer { align-items: flex-end; }.modal-footer .btn-primary { padding-left: 14px; padding-right: 14px; }.membership-plans { grid-template-columns: 1fr; }.membership-plans > button:last-child { grid-column: auto; width: 100%; }.membership-form-grid h2 { font-size: 36px; }.membership-form { padding: 18px; }.selected-plan { display: grid; }.membership-hero { padding: 65px 0; }
 }
 
 @layer components {

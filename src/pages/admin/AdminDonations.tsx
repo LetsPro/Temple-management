@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Search, Plus, X, Eye, Printer, Download } from 'lucide-react'
+import { Search, Plus, X, Eye, Printer, Download, Settings2, Trash2 } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import { useForm } from 'react-hook-form'
@@ -37,6 +37,7 @@ export default function AdminDonations() {
   const [showForm, setShowForm] = useState(false)
   const [selected, setSelected] = useState<Donation | null>(null)
   const [submitting, setSubmitting] = useState(false)
+  const [showPurposeManager, setShowPurposeManager] = useState(false)
 
   const { register, handleSubmit, reset, watch, formState: { errors } } = useForm<OfflineForm>({
     resolver: zodResolver(offlineSchema),
@@ -103,6 +104,7 @@ export default function AdminDonations() {
           <p className="text-temple-muted text-sm">Total (filtered): ₹{totalAmount.toLocaleString('en-IN')}</p>
         </div>
         <div className="flex gap-2">
+          <button onClick={() => setShowPurposeManager(true)} className="btn-secondary text-sm"><Settings2 size={14} /> Donation Types</button>
           <button onClick={exportCSV} className="btn-secondary text-sm"><Download size={14} /></button>
           <button onClick={() => setShowForm(true)} className="btn-primary text-sm"><Plus size={15} /> Offline Donation</button>
         </div>
@@ -173,6 +175,7 @@ export default function AdminDonations() {
       )}
 
       {/* Receipt modal */}
+      {showPurposeManager && <PurposeManager onClose={() => setShowPurposeManager(false)} />}
       {selected && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4" onClick={() => setSelected(null)}>
           <div className="bg-white rounded-3xl w-full max-w-md" onClick={e => e.stopPropagation()} id="donation-receipt">
@@ -223,4 +226,23 @@ export default function AdminDonations() {
       )}
     </div>
   )
+}
+
+function PurposeManager({ onClose }: { onClose: () => void }) {
+  const [items, setItems] = useState<any[]>([])
+  const [form, setForm] = useState({ name: '', description: '', icon: '🪷' })
+  const load = () => supabase.from('donation_purposes').select('*').order('display_order').then(({ data }) => setItems(data || []))
+  useEffect(() => { void load() }, [])
+  const add = async () => {
+    if (!form.name.trim()) return toast.error('Enter a donation type name.')
+    const { error } = await supabase.from('donation_purposes').insert({ ...form, is_active: true, display_order: items.length + 1 })
+    if (error) return toast.error(error.message)
+    setForm({ name: '', description: '', icon: '🪷' }); load()
+  }
+  const toggle = async (item: any) => { await supabase.from('donation_purposes').update({ is_active: !item.is_active }).eq('id', item.id); load() }
+  const remove = async (id: string) => { await supabase.from('donation_purposes').delete().eq('id', id); load() }
+  return <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4" onMouseDown={e => e.target === e.currentTarget && onClose()}><div className="bg-white rounded-3xl w-full max-w-2xl max-h-[85vh] overflow-y-auto p-6"><div className="flex justify-between mb-5"><div><h2 className="text-xl font-bold">Donation Types</h2><p className="text-sm text-temple-muted">Control the purposes shown in the donation modal.</p></div><button onClick={onClose}><X /></button></div>
+    <div className="grid sm:grid-cols-[70px_1fr_1.5fr_auto] gap-2 mb-5"><input className="input-field" value={form.icon} onChange={e => setForm({...form, icon:e.target.value})}/><input className="input-field" placeholder="Type name" value={form.name} onChange={e => setForm({...form, name:e.target.value})}/><input className="input-field" placeholder="Short description" value={form.description} onChange={e => setForm({...form, description:e.target.value})}/><button onClick={add} className="btn-primary"><Plus /></button></div>
+    <div className="divide-y border rounded-2xl">{items.map(item => <div key={item.id} className="flex items-center gap-3 p-3"><span className="text-2xl">{item.icon}</span><div className="flex-1"><strong className="block text-sm">{item.name}</strong><small className="text-temple-muted">{item.description}</small></div><button onClick={() => toggle(item)} className={`text-xs font-bold px-3 py-1 rounded-full ${item.is_active ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-500'}`}>{item.is_active ? 'Active' : 'Hidden'}</button><button onClick={() => remove(item.id)} className="text-red-500 p-2"><Trash2 size={16}/></button></div>)}</div>
+  </div></div>
 }

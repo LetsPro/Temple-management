@@ -146,7 +146,7 @@ export interface Database {
       payments: {
         Row: {
           id: string
-          payment_type: 'booking' | 'donation'
+          payment_type: 'booking' | 'donation' | 'membership'
           reference_id: string
           user_id: string | null
           razorpay_order_id: string
@@ -183,6 +183,21 @@ export interface Database {
         }
         Insert: Omit<Database['public']['Tables']['donations']['Row'], 'id' | 'donation_number' | 'created_at' | 'updated_at'>
         Update: Partial<Database['public']['Tables']['donations']['Insert']>
+      }
+      donation_purposes: {
+        Row: { id: string; name: string; description: string; icon: string; is_active: boolean; display_order: number; created_at: string; updated_at: string }
+        Insert: Omit<Database['public']['Tables']['donation_purposes']['Row'], 'id' | 'created_at' | 'updated_at'>
+        Update: Partial<Database['public']['Tables']['donation_purposes']['Insert']>
+      }
+      membership_plans: {
+        Row: { id: string; name: string; amount: number; duration_months: number; benefits: Json; is_active: boolean; display_order: number; created_at: string; updated_at: string }
+        Insert: Omit<Database['public']['Tables']['membership_plans']['Row'], 'id' | 'created_at' | 'updated_at'>
+        Update: Partial<Database['public']['Tables']['membership_plans']['Insert']>
+      }
+      memberships: {
+        Row: { id: string; membership_number: string; devotee_id: string; plan_id: string; full_name: string; spouse_name: string; date_of_birth: string; rashi: string; nakshatra: string; address: string; mobile: string; declaration_accepted: boolean; status: 'pending' | 'active' | 'expired' | 'cancelled'; payment_status: 'pending' | 'paid' | 'failed' | 'refunded'; starts_at: string | null; expires_at: string | null; created_at: string; updated_at: string }
+        Insert: Omit<Database['public']['Tables']['memberships']['Row'], 'id' | 'membership_number' | 'created_at' | 'updated_at'>
+        Update: Partial<Database['public']['Tables']['memberships']['Insert']>
       }
       donation_receipts: {
         Row: {

@@ -16,6 +16,7 @@ import EventDetailPage from './pages/public/EventDetailPage'
 import DonationsPage from './pages/public/DonationsPage'
 import GalleryPage from './pages/public/GalleryPage'
 import ContactPage from './pages/public/ContactPage'
+import MembershipPage from './pages/public/MembershipPage'
 import LoginPage from './pages/auth/LoginPage'
 import RegisterPage from './pages/auth/RegisterPage'
 import ForgotPasswordPage from './pages/auth/ForgotPasswordPage'
@@ -41,6 +42,7 @@ import AdminAnnouncements from './pages/admin/AdminAnnouncements'
 import AdminGallery from './pages/admin/AdminGallery'
 import AdminSettings from './pages/admin/AdminSettings'
 import AdminReports from './pages/admin/AdminReports'
+import AdminMemberships from './pages/admin/AdminMemberships'
 
 function ProtectedRoute({ children, requireAdmin = false }: { children: React.ReactNode; requireAdmin?: boolean }) {
   const { user, profile, loading } = useAuth()
@@ -72,6 +74,7 @@ function App() {
           <Route path="/festivals" element={<FestivalsPage />} />
           <Route path="/festivals/:slug" element={<EventDetailPage />} />
           <Route path="/donate" element={<DonationsPage />} />
+          <Route path="/membership" element={<MembershipPage />} />
           <Route path="/gallery" element={<GalleryPage />} />
           <Route path="/contact" element={<ContactPage />} />
         </Route>
@@ -104,6 +107,7 @@ function App() {
           <Route path="poojas" element={<AdminPoojaServices />} />
           <Route path="bookings" element={<AdminBookings />} />
           <Route path="donations" element={<AdminDonations />} />
+          <Route path="memberships" element={<AdminMemberships />} />
           <Route path="events" element={<AdminEvents />} />
           <Route path="announcements" element={<AdminAnnouncements />} />
           <Route path="gallery" element={<AdminGallery />} />

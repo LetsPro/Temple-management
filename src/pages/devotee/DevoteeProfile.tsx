@@ -2,7 +2,9 @@ import { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { User, Save, Lock, CheckCircle } from 'lucide-react'
+import { User, Save, Lock, CheckCircle, BadgeCheck, CalendarDays } from 'lucide-react'
+import { Link, useSearchParams } from 'react-router-dom'
+import { format } from 'date-fns'
 import { useAuth } from '../../contexts/AuthContext'
 import { supabase } from '../../lib/supabase'
 import toast from 'react-hot-toast'
@@ -29,9 +31,12 @@ type PasswordData = z.infer<typeof passwordSchema>
 
 export default function DevoteeProfile() {
   const { profile, refreshProfile } = useAuth()
+  const [searchParams] = useSearchParams()
+  const [membership, setMembership] = useState<any>(null)
+  const [membershipPlan, setMembershipPlan] = useState<any>(null)
   const [savingProfile, setSavingProfile] = useState(false)
   const [savingPassword, setSavingPassword] = useState(false)
-  const [activeTab, setActiveTab] = useState<'profile' | 'password'>('profile')
+  const [activeTab, setActiveTab] = useState<'profile' | 'membership' | 'password'>(searchParams.get('tab') === 'membership' ? 'membership' : 'profile')
 
   const { register: regProfile, handleSubmit: handleProfile, reset: resetProfile, formState: { errors: profileErrors } } = useForm<ProfileData>({
     resolver: zodResolver(profileSchema),
@@ -53,6 +58,14 @@ export default function DevoteeProfile() {
       })
     }
   }, [profile, resetProfile])
+
+  useEffect(() => {
+    if (!profile) return
+    supabase.from('memberships').select('*').eq('devotee_id', profile.id).order('created_at', { ascending: false }).limit(1).maybeSingle().then(async ({ data }) => {
+      setMembership(data)
+      if (data?.plan_id) { const { data: plan } = await supabase.from('membership_plans').select('*').eq('id', data.plan_id).maybeSingle(); setMembershipPlan(plan) }
+    })
+  }, [profile])
 
   const completionFields = [
     profile?.full_name, profile?.mobile, profile?.email, profile?.address,
@@ -116,6 +129,9 @@ export default function DevoteeProfile() {
         </button>
         <button onClick={() => setActiveTab('password')} className={`pb-3 px-4 text-sm font-semibold border-b-2 transition-all ${activeTab === 'password' ? 'border-vermilion-700 text-vermilion-700' : 'border-transparent text-temple-muted hover:text-temple-text'}`}>
           Change Password
+        </button>
+        <button onClick={() => setActiveTab('membership')} className={`pb-3 px-4 text-sm font-semibold border-b-2 transition-all ${activeTab === 'membership' ? 'border-vermilion-700 text-vermilion-700' : 'border-transparent text-temple-muted hover:text-temple-text'}`}>
+          Membership
         </button>
       </div>
 
@@ -194,6 +210,15 @@ export default function DevoteeProfile() {
             <Lock size={15} /> {savingPassword ? 'Updating...' : 'Update Password'}
           </button>
         </form>
+      )}
+
+      {activeTab === 'membership' && (
+        membership ? <div className="card membership-profile-card">
+          <div className="flex items-start justify-between gap-4"><div className="flex gap-3"><div className="membership-badge"><BadgeCheck /></div><div><span className="text-xs uppercase tracking-wider text-saffron-600 font-bold">{membership.status} membership</span><h3 className="font-serif text-2xl text-vermilion-700 font-bold">{membershipPlan?.name || 'Patron Membership'}</h3><p className="text-sm text-temple-muted">{membership.membership_number}</p></div></div><span className={`membership-status ${membership.status}`}>{membership.status}</span></div>
+          <div className="grid sm:grid-cols-3 gap-3 my-6"><div><small>Membership fee</small><strong>₹{Number(membershipPlan?.amount || 0).toLocaleString('en-IN')}</strong></div><div><small>Started</small><strong>{membership.starts_at ? format(new Date(membership.starts_at), 'dd MMM yyyy') : 'Pending payment'}</strong></div><div><small>Renewal due</small><strong>{membership.expires_at ? format(new Date(membership.expires_at), 'dd MMM yyyy') : '—'}</strong></div></div>
+          <h4 className="font-bold mb-2">Included benefits</h4><ul className="membership-benefits">{(Array.isArray(membershipPlan?.benefits) ? membershipPlan.benefits : []).map((benefit: string) => <li key={benefit}><CheckCircle />{benefit}</li>)}</ul>
+          <Link to="/membership" className="btn-secondary mt-5"><CalendarDays size={16}/> View or renew membership</Link>
+        </div> : <div className="card text-center py-10"><BadgeCheck size={42} className="mx-auto text-saffron-500 mb-3"/><h3 className="font-serif text-2xl text-vermilion-700 font-bold">Become a Patron Member</h3><p className="text-temple-muted text-sm max-w-md mx-auto mt-2">Enjoy seva passes, special pujas, consultations and annaprasadam benefits while supporting the Trust.</p><Link to="/membership" className="btn-primary mt-5">Explore membership plans</Link></div>
       )}
     </div>
   )

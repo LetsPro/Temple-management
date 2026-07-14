@@ -37,7 +37,7 @@ export default class ErrorBoundary extends Component<Props, State> {
               </button>
               <Link to="/" className="btn-secondary">Go Home</Link>
             </div>
-            {import.meta.env.DEV && this.state.error && (
+          {(import.meta as ImportMeta & { env?: { DEV?: boolean } }).env?.DEV && this.state.error && (
               <pre className="mt-6 text-left bg-red-50 border border-red-200 rounded-xl p-4 text-xs text-red-700 overflow-auto">
                 {this.state.error.message}
               </pre>
