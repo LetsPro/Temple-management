@@ -14,7 +14,7 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>
 
 export default function LoginPage() {
-  const { signIn, user } = useAuth()
+  const { signIn, user, profile } = useAuth()
   const navigate = useNavigate()
   const [showPassword, setShowPassword] = useState(false)
   const [submitting, setSubmitting] = useState(false)
@@ -24,18 +24,24 @@ export default function LoginPage() {
   })
 
   useEffect(() => {
-    if (user) navigate('/portal', { replace: true })
-  }, [user, navigate])
+    if (user && profile) {
+      navigate(profile.role === 'admin' ? '/admin' : '/portal', { replace: true })
+    }
+  }, [user, profile, navigate])
 
   const onSubmit = async (data: FormData) => {
     setSubmitting(true)
     const { error } = await signIn(data.email, data.password)
     setSubmitting(false)
     if (error) {
-      toast.error(error.message === 'Invalid login credentials' ? 'Invalid email or password.' : error.message)
+      const message = error.message === 'Invalid login credentials'
+        ? 'Invalid email or password.'
+        : error.message.toLowerCase().includes('database') || error.message.toLowerCase().includes('500')
+          ? 'The authentication service needs database repair. Please contact the administrator.'
+          : error.message
+      toast.error(message)
     } else {
       toast.success('Welcome back! 🙏')
-      navigate('/portal', { replace: true })
     }
   }
 

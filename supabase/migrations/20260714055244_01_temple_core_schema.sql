@@ -137,6 +137,27 @@ CREATE TABLE IF NOT EXISTS profiles (
 
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 
+-- Resolve privileged access without querying profiles through its own RLS policy.
+-- The table owner executes this function and therefore bypasses profiles RLS.
+CREATE OR REPLACE FUNCTION public.is_admin()
+RETURNS boolean
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT EXISTS (
+    SELECT 1
+    FROM public.profiles
+    WHERE id = (SELECT auth.uid())
+      AND role = 'admin'
+      AND is_active = true
+  );
+$$;
+
+REVOKE ALL ON FUNCTION public.is_admin() FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.is_admin() TO authenticated;
+
 DROP POLICY IF EXISTS "profiles_select_own" ON profiles;
 CREATE POLICY "profiles_select_own" ON profiles FOR SELECT
   TO authenticated USING (auth.uid() = id);
@@ -152,17 +173,12 @@ CREATE POLICY "profiles_update_own" ON profiles FOR UPDATE
 -- Admins can read all profiles
 DROP POLICY IF EXISTS "profiles_admin_select" ON profiles;
 CREATE POLICY "profiles_admin_select" ON profiles FOR SELECT
-  TO authenticated USING (
-    EXISTS (SELECT 1 FROM profiles p WHERE p.id = auth.uid() AND p.role = 'admin')
-  );
+  TO authenticated USING ((SELECT public.is_admin()));
 
 DROP POLICY IF EXISTS "profiles_admin_update" ON profiles;
 CREATE POLICY "profiles_admin_update" ON profiles FOR UPDATE
-  TO authenticated USING (
-    EXISTS (SELECT 1 FROM profiles p WHERE p.id = auth.uid() AND p.role = 'admin')
-  ) WITH CHECK (
-    EXISTS (SELECT 1 FROM profiles p WHERE p.id = auth.uid() AND p.role = 'admin')
-  );
+  TO authenticated USING ((SELECT public.is_admin()))
+  WITH CHECK ((SELECT public.is_admin()));
 
 -- Auto-generate devotee number
 CREATE OR REPLACE FUNCTION generate_devotee_number()
