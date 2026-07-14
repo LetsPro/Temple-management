@@ -13,7 +13,6 @@ import PoojaServicesPage from './pages/public/PoojaServicesPage'
 import PoojaServiceDetailPage from './pages/public/PoojaServiceDetailPage'
 import FestivalsPage from './pages/public/FestivalsPage'
 import EventDetailPage from './pages/public/EventDetailPage'
-import DonationsPage from './pages/public/DonationsPage'
 import GalleryPage from './pages/public/GalleryPage'
 import ContactPage from './pages/public/ContactPage'
 import MembershipPage from './pages/public/MembershipPage'
@@ -73,7 +72,7 @@ function App() {
           <Route path="/poojas/:slug" element={<PoojaServiceDetailPage />} />
           <Route path="/festivals" element={<FestivalsPage />} />
           <Route path="/festivals/:slug" element={<EventDetailPage />} />
-          <Route path="/donate" element={<DonationsPage />} />
+          <Route path="/donate" element={<Navigate to="/" replace />} />
           <Route path="/membership" element={<MembershipPage />} />
           <Route path="/gallery" element={<GalleryPage />} />
           <Route path="/contact" element={<ContactPage />} />

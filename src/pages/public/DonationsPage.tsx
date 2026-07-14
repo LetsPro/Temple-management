@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { CreditCard, Heart, ShieldCheck, X } from 'lucide-react'
+import { CreditCard, X } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import { payWithRazorpay } from '../../lib/razorpay'
@@ -13,26 +13,6 @@ const fallbackPurposes: Purpose[] = [
   { id: 'general', name: 'General Donation', description: 'Where the trust needs it most', icon: '🪷' },
 ]
 const amounts = [101, 251, 501, 1001, 2501, 5001]
-
-export default function DonationsPage() {
-  const [open, setOpen] = useState(false)
-  return (
-    <div className="page-container py-16 sm:py-24">
-      <div className="max-w-3xl mx-auto text-center">
-        <span className="text-saffron-600 font-bold uppercase tracking-[.2em] text-xs">A sacred offering</span>
-        <h1 className="font-serif text-4xl sm:text-6xl text-vermilion-700 font-bold mt-3">Support devotion and service</h1>
-        <p className="text-temple-muted max-w-2xl mx-auto mt-4">Your contribution supports daily worship, annadanam, festivals, temple care and community service.</p>
-        <button onClick={() => setOpen(true)} className="btn-primary text-base px-8 py-3.5 mt-8"><Heart size={18} /> Donate Now</button>
-        <div className="grid sm:grid-cols-3 gap-4 mt-12 text-left">
-          {[['Secure payment', 'Payment is completed through Razorpay Checkout.'], ['Choose your purpose', 'Direct your offering to the cause closest to your heart.'], ['Instant record', 'Paid donations are saved in your devotee profile.']].map(([title, copy]) => (
-            <div key={title} className="card"><ShieldCheck className="text-saffron-600 mb-3" /><h2 className="font-bold">{title}</h2><p className="text-sm text-temple-muted mt-1">{copy}</p></div>
-          ))}
-        </div>
-      </div>
-      <DonationModal open={open} onClose={() => setOpen(false)} />
-    </div>
-  )
-}
 
 export function DonationModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { user, profile } = useAuth()

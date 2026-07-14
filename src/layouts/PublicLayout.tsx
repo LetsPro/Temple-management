@@ -10,8 +10,6 @@ const navLinks = [
   { href: '/', label: 'Home' },
   { href: '/about', label: 'About Temple' },
   { href: '/poojas', label: 'Sevas / Pooja Booking' },
-  { href: '/donate', label: 'Donations' },
-  { href: '/membership', label: 'Membership' },
   { href: '/festivals', label: 'Events' },
   { href: '/gallery', label: 'Gallery' },
   { href: '/contact', label: 'Contact' },
@@ -37,6 +35,12 @@ export default function PublicLayout() {
     setAccountOpen(false)
   }, [location.pathname])
 
+  useEffect(() => {
+    const openDonation = () => setDonationOpen(true)
+    window.addEventListener('open-donation-modal', openDonation)
+    return () => window.removeEventListener('open-donation-modal', openDonation)
+  }, [])
+
   const handleSignOut = async () => {
     await signOut()
     navigate('/')
@@ -54,12 +58,13 @@ export default function PublicLayout() {
 
             <div className="desktop-nav">
               {navLinks.map(link => (
-                <Link key={link.href} to={link.href} onClick={event => { if (link.href === '/donate') { event.preventDefault(); setDonationOpen(true) } }} className={location.pathname === link.href ? 'active' : ''}>{link.label}</Link>
+                <Link key={link.href} to={link.href} className={location.pathname === link.href ? 'active' : ''}>{link.label}</Link>
               ))}
             </div>
 
             <div className="nav-actions">
-              <button onClick={() => setAccountOpen(true)} className="account-button"><User size={16} /> <span>{user ? profile?.full_name || 'My Account' : 'My Account'}</span></button>
+              <Link to="/membership" className="membership-button">Membership</Link>
+              <button onClick={() => setDonationOpen(true)} className="donate-button"><Heart size={16} /> Donate</button>
               <button className="mobile-toggle" onClick={() => setMobileOpen(!mobileOpen)} aria-label="Toggle menu" aria-expanded={mobileOpen}>
                 {mobileOpen ? <X size={23} /> : <Menu size={23} />}
               </button>
@@ -70,12 +75,16 @@ export default function PublicLayout() {
         {mobileOpen && (
           <div className="mobile-menu">
             <div className="page-container">
-              {navLinks.map(link => <Link key={link.href} to={link.href} onClick={event => { if (link.href === '/donate') { event.preventDefault(); setDonationOpen(true); setMobileOpen(false) } }} className={location.pathname === link.href ? 'active' : ''}>{link.label}</Link>)}
+              {navLinks.map(link => <Link key={link.href} to={link.href} className={location.pathname === link.href ? 'active' : ''}>{link.label}</Link>)}
+              <Link to="/membership">Membership</Link>
+              <button onClick={() => { setDonationOpen(true); setMobileOpen(false) }}>Donate</button>
               {user ? <button onClick={handleSignOut}>Sign Out</button> : <Link to="/register">Create Account</Link>}
             </div>
           </div>
         )}
       </header>
+
+      <button onClick={() => setAccountOpen(true)} className="account-edge-button" aria-label="Open My Account" title="My Account"><Menu size={22} /><span>My Account</span></button>
 
       <main className="flex-1"><Outlet /></main>
       <DonationModal open={donationOpen} onClose={() => setDonationOpen(false)} />
@@ -126,7 +135,7 @@ function Footer() {
           <h4>Quick Links</h4>
           <Link to="/about">› About Temple</Link>
           <Link to="/poojas">› Sevas & Poojas</Link>
-          <Link to="/donate">› Donations</Link>
+          <button type="button" onClick={() => window.dispatchEvent(new Event('open-donation-modal'))}>› Donations</button>
           <Link to="/membership">› Membership</Link>
           <Link to="/contact">› Contact Us</Link>
         </div>
