@@ -93,7 +93,7 @@ export function DonationModal({ open, onClose }: { open: boolean; onClose: () =>
           <label className="flex items-center gap-2 mt-5 text-sm font-semibold"><input type="checkbox" checked={anonymous} onChange={e => setAnonymous(e.target.checked)} /> Donate anonymously</label>
           {!anonymous && <div className="grid sm:grid-cols-2 gap-3 mt-4"><input value={name} onChange={e => setName(e.target.value)} className="input-field" placeholder="Full name" /><input value={mobile} onChange={e => setMobile(e.target.value)} className="input-field" placeholder="Mobile number" /><input value={email} onChange={e => setEmail(e.target.value)} className="input-field sm:col-span-2" type="email" placeholder="Email address (optional)" /></div>}
         </div>
-        <div className="modal-footer"><div><small>Total offering</small><strong>₹{finalAmount.toLocaleString('en-IN')}</strong></div><button onClick={donate} disabled={submitting} className="btn-primary"><CreditCard size={17} /> {submitting ? 'Opening payment...' : 'Pay with Razorpay'}</button></div>
+        <div className="modal-footer"><div><small>Total offering</small><strong>₹{finalAmount.toLocaleString('en-IN')}</strong></div><button onClick={donate} disabled={submitting} className="btn-primary"><CreditCard size={17} /> {submitting ? 'Opening payment...' : 'Donate Now'}</button></div>
       </div>
     </div>
   )

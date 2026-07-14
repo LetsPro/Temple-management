@@ -64,7 +64,7 @@ export default function MembershipPage() {
           <label className="sm:col-span-2"><span className="label">Address *</span><textarea className="input-field" rows={3} value={form.address} onChange={event => set('address', event.target.value)} /></label>
         </div>
         <label className="declaration"><input type="checkbox" checked={form.declaration_accepted} onChange={event => set('declaration_accepted', event.target.checked)} /><span>I declare that the information above is correct to the best of my knowledge.</span></label>
-        <button onClick={join} disabled={!user || submitting} className="btn-primary w-full py-3.5 text-base"><CreditCard /> {submitting ? 'Processing membership...' : `Pay ₹${selected.amount.toLocaleString('en-IN')} with Razorpay`}</button>
+        <button onClick={join} disabled={!user || submitting} className="btn-primary w-full py-3.5 text-base"><CreditCard /> {submitting ? 'Processing membership...' : `Join for ₹${selected.amount.toLocaleString('en-IN')}`}</button>
       </div>
     </div></section>
   </div>
