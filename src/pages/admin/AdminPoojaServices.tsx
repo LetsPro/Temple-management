@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Plus, Edit, Archive, Eye, X, Save, ToggleLeft, ToggleRight } from 'lucide-react'
+import { Plus, CreditCard as Edit, Archive, Eye, X, Save, ToggleLeft, ToggleRight } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
