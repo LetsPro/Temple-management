@@ -149,7 +149,10 @@
 .offering-card b { display: inline-flex; gap: 7px; align-items: center; color: #9d1515; font-size: 12px; }
 
 .warm-section { padding: 70px 0; background: #fff6e9; border-top: 1px solid #f1ddc2; border-bottom: 1px solid #f1ddc2; }
-.community-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 55px; }
+.community-grid { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(280px, .75fr); gap: 55px; align-items: center; }
+.announcement-column { min-width: 0; }
+.announcement-image { width: min(100%, 390px); justify-self: center; overflow: hidden; border: 7px solid rgba(255,255,255,.9); border-radius: 28px; background: #fffaf2; box-shadow: 0 22px 55px rgba(105,58,24,.17); }
+.announcement-image img { display: block; width: 100%; aspect-ratio: 3 / 4; object-fit: cover; object-position: center; }
 .event-list { display: grid; gap: 12px; margin-top: 25px; }
 .announcement-carousel { margin-top: 25px; }
 .announcement-viewport { overflow: hidden; border-radius: 18px; }
@@ -179,6 +182,7 @@
 .guru-profile-heading p { color: #786257; font-size: 15px; }
 .guru-profile-content { display: grid; gap: 17px; padding-top: 28px; }
 .guru-profile-content p { color: #5e4a40; font-size: 16px; line-height: 1.85; }
+.about-guru-page { padding: 70px 0 78px; background: radial-gradient(circle at 12% 8%, rgba(232,164,61,.12), transparent 28%), linear-gradient(145deg, #fffdf8, #fff5e7); }
 .event-card { display: grid; grid-template-columns: 54px 1fr auto; align-items: center; gap: 14px; padding: 14px; background: white; border: 1px solid #eee0d2; border-radius: 14px; }
 .event-card time { display: grid; place-items: center; align-content: center; height: 58px; border-radius: 12px; color: #9d1515; background: #fff0e3; }
 .event-card time strong { font-size: 20px; line-height: 1; }
@@ -341,6 +345,7 @@
   .blessing { border-bottom: 0; }
   .content-section, .warm-section { padding-top: 55px; padding-bottom: 55px; }
   .feature-grid, .community-grid { grid-template-columns: 1fr; gap: 32px; }
+  .announcement-image { width: min(100%, 360px); }
   .guru-home-section { padding: 58px 0; }.guru-home-grid { grid-template-columns: 1fr; }.guru-home-image { justify-self: center; max-width: 390px; }.guru-home-copy { text-align: center; }.guru-home-copy p { margin-left: auto; margin-right: auto; }.guru-profile { padding: 22px; }.guru-profile-heading { grid-template-columns: 1fr; text-align: center; }.guru-profile-photo { width: min(280px, 100%); justify-self: center; }
   .feature-grid > :last-child { grid-column: auto; max-width: none; }
   .gallery-mosaic { grid-template-columns: repeat(2, 1fr); grid-template-rows: 210px 130px 130px; }

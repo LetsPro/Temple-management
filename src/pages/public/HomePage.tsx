@@ -14,13 +14,11 @@ import {
   UsersRound,
   UtensilsCrossed,
 } from 'lucide-react'
-import { format } from 'date-fns'
 import { supabase } from '../../lib/supabase'
 import type { Database } from '../../lib/database.types'
 import { Skeleton } from '../../components/ui/Skeleton'
 
 type Service = Database['public']['Tables']['pooja_services']['Row']
-type Event = Database['public']['Tables']['events']['Row']
 type Announcement = Database['public']['Tables']['announcements']['Row']
 
 const TRUST_NAME = 'Shri Tripura Sundari Lalithambe Trust'
@@ -72,7 +70,6 @@ const quickLinks = [
 
 export default function HomePage() {
   const [services, setServices] = useState<Service[]>([])
-  const [events, setEvents] = useState<Event[]>([])
   const [announcements, setAnnouncements] = useState<Announcement[]>([])
   const [announcementIndex, setAnnouncementIndex] = useState(0)
   const [announcementPaused, setAnnouncementPaused] = useState(false)
@@ -80,13 +77,11 @@ export default function HomePage() {
 
   useEffect(() => {
     async function load() {
-      const [servicesRes, eventsRes, announcementsRes] = await Promise.all([
+      const [servicesRes, announcementsRes] = await Promise.all([
         supabase.from('pooja_services').select('*').eq('is_featured', true).eq('is_active', true).order('display_order').limit(3),
-        supabase.from('events').select('*').eq('is_published', true).gte('end_datetime', new Date().toISOString()).order('start_datetime').limit(2),
         supabase.from('announcements').select('*').eq('is_published', true).order('created_at', { ascending: false }).limit(3),
       ])
       setServices(servicesRes.data || [])
-      setEvents(eventsRes.data || [])
       setAnnouncements(announcementsRes.data || [])
       setLoading(false)
     }
@@ -203,36 +198,29 @@ export default function HomePage() {
         )}
       </section>
 
-      {(announcements.length > 0 || events.length > 0) && (
+      {announcements.length > 0 && (
         <section className="warm-section">
           <div className="page-container community-grid">
-            {announcements.length > 0 && (
-              <div>
-                <div className="section-heading"><span>Temple news</span><h2>Latest Announcements</h2></div>
-                <div className="announcement-carousel" onMouseEnter={() => setAnnouncementPaused(true)} onMouseLeave={() => setAnnouncementPaused(false)} onFocus={() => setAnnouncementPaused(true)} onBlur={event => !event.currentTarget.contains(event.relatedTarget) && setAnnouncementPaused(false)}>
-                  <div className="announcement-viewport">
-                    <div className="announcement-track" style={{ transform: `translateX(-${announcementIndex * 100}%)` }}>
-                    {announcements.map((announcement, index) => (
-                    <article key={announcement.id} aria-hidden={index !== announcementIndex}>
-                      <BellRing size={18} /><div><h3>{announcement.title}</h3><p>{announcement.content}</p></div>
-                    </article>
-                  ))}
-                    </div>
+            <div className="announcement-column">
+              <div className="section-heading"><span>Temple news</span><h2>Latest Announcements</h2></div>
+              <div className="announcement-carousel" onMouseEnter={() => setAnnouncementPaused(true)} onMouseLeave={() => setAnnouncementPaused(false)} onFocus={() => setAnnouncementPaused(true)} onBlur={event => !event.currentTarget.contains(event.relatedTarget) && setAnnouncementPaused(false)}>
+                <div className="announcement-viewport">
+                  <div className="announcement-track" style={{ transform: `translateX(-${announcementIndex * 100}%)` }}>
+                  {announcements.map((announcement, index) => (
+                  <article key={announcement.id} aria-hidden={index !== announcementIndex}>
+                    <BellRing size={18} /><div><h3>{announcement.title}</h3><p>{announcement.content}</p></div>
+                  </article>
+                ))}
                   </div>
-                  {announcements.length > 1 && <div className="announcement-dots" aria-label="Announcement navigation">
-                    {announcements.map((announcement, index) => <button key={announcement.id} type="button" className={index === announcementIndex ? 'active' : ''} onClick={() => setAnnouncementIndex(index)} aria-label={`Show announcement ${index + 1}`} aria-current={index === announcementIndex ? 'true' : undefined} />)}
-                  </div>}
                 </div>
+                {announcements.length > 1 && <div className="announcement-dots" aria-label="Announcement navigation">
+                  {announcements.map((announcement, index) => <button key={announcement.id} type="button" className={index === announcementIndex ? 'active' : ''} onClick={() => setAnnouncementIndex(index)} aria-label={`Show announcement ${index + 1}`} aria-current={index === announcementIndex ? 'true' : undefined} />)}
+                </div>}
               </div>
-            )}
-            {events.length > 0 && (
-              <div>
-                <div className="section-heading"><span>Mark your calendar</span><h2>Upcoming Events</h2></div>
-                <div className="event-list">
-                  {events.map(event => <EventCard key={event.id} event={event} />)}
-                </div>
-              </div>
-            )}
+            </div>
+            <figure className="announcement-image">
+              <img src="/lalithambe-announcements.jpg" alt="Goddess Lalithambe holding sugarcane and a lotus" loading="lazy" />
+            </figure>
           </div>
         </section>
       )}
@@ -264,17 +252,6 @@ function ServiceCard({ service }: { service: Service }) {
         <p>{service.description}</p>
         <div><strong>₹{service.price.toLocaleString('en-IN')}</strong><span><Clock3 size={13} /> {service.duration_minutes} min</span></div>
       </div>
-    </Link>
-  )
-}
-
-function EventCard({ event }: { event: Event }) {
-  const date = new Date(event.start_datetime)
-  return (
-    <Link to={`/festivals/${event.slug}`} className="event-card">
-      <time><strong>{format(date, 'dd')}</strong><span>{format(date, 'MMM')}</span></time>
-      <div><h3>{event.title}</h3><p>{event.description}</p><span><MapPin size={13} /> {event.venue}</span></div>
-      <ArrowRight size={18} />
     </Link>
   )
 }
