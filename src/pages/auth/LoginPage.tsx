@@ -53,10 +53,10 @@ export default function LoginPage() {
           <div className="text-6xl mb-6">🛕</div>
           <h1 className="font-serif text-4xl font-bold mb-4">Shri Tripura Sundari Lalithambe Trust</h1>
           <p className="text-white/70 leading-relaxed">
-            Sign in to book poojas, make donations, and access your devotee portal.
+            Sign in to book poojas and access your devotee portal.
           </p>
           <div className="mt-8 space-y-3">
-            {['Book Poojas & Sevas Online', 'Make Secure Donations', 'Event Registrations', 'Manage Your Profile'].map(item => (
+            {['Book Poojas & Sevas Online', 'Membership Services', 'Event Registrations', 'Manage Your Profile'].map(item => (
               <div key={item} className="flex items-center gap-2.5 text-white/80 text-sm">
                 <div className="w-5 h-5 rounded-full bg-gold-500/20 flex items-center justify-center flex-shrink-0">
                   <div className="w-2 h-2 rounded-full bg-gold-500" />

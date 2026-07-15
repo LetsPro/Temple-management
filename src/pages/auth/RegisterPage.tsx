@@ -72,7 +72,7 @@ export default function RegisterPage() {
           <div className="text-6xl mb-6">🛕</div>
           <h1 className="font-serif text-4xl font-bold mb-4">Join the Temple Family</h1>
           <p className="text-white/70 leading-relaxed">
-            Register to enjoy seamless pooja bookings, secure donations, and personalized temple services.
+            Register to enjoy seamless pooja bookings and personalized temple services.
           </p>
         </div>
       </div>

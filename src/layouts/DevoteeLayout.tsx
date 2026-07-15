@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import {
-  LayoutDashboard, Calendar, Heart, Bell, User, Settings, LogOut,
+  LayoutDashboard, Calendar, Bell, User, LogOut,
   Menu, X, ChevronRight, BookOpen, BadgeCheck
 } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
@@ -10,7 +10,6 @@ const navItems = [
   { href: '/portal', label: 'Dashboard', icon: LayoutDashboard, exact: true },
   { href: '/portal/book', label: 'Book Pooja / Seva', icon: BookOpen },
   { href: '/portal/bookings', label: 'My Bookings', icon: Calendar },
-  { href: '/portal/donations', label: 'My Donations', icon: Heart },
   { href: '/portal/profile?tab=membership', label: 'My Membership', icon: BadgeCheck },
   { href: '/portal/events', label: 'Events', icon: Calendar },
   { href: '/portal/notifications', label: 'Notifications', icon: Bell },

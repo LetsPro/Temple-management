@@ -26,7 +26,6 @@ import DevoteeDashboard from './pages/devotee/DevoteeDashboard'
 import DevoteeProfile from './pages/devotee/DevoteeProfile'
 import DevoteeBookings from './pages/devotee/DevoteeBookings'
 import BookingFlow from './pages/devotee/BookingFlow'
-import DevoteeDonations from './pages/devotee/DevoteeDonations'
 import DevoteeEvents from './pages/devotee/DevoteeEvents'
 import DevoteeNotifications from './pages/devotee/DevoteeNotifications'
 
@@ -95,7 +94,7 @@ function App() {
           <Route path="bookings" element={<DevoteeBookings />} />
           <Route path="book" element={<BookingFlow />} />
           <Route path="book/:serviceId" element={<BookingFlow />} />
-          <Route path="donations" element={<DevoteeDonations />} />
+          <Route path="donations" element={<Navigate to="/portal" replace />} />
           <Route path="events" element={<DevoteeEvents />} />
           <Route path="notifications" element={<DevoteeNotifications />} />
         </Route>

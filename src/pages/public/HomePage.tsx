@@ -5,14 +5,11 @@ import {
   BellRing,
   CalendarDays,
   Clock3,
-  HandHeart,
-  HeartHandshake,
   MapPin,
   Phone,
   ShieldCheck,
   Sparkles,
   UsersRound,
-  UtensilsCrossed,
 } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import type { Database } from '../../lib/database.types'
@@ -37,20 +34,6 @@ const quickLinks = [
     action: 'View All Events',
     href: '/festivals',
     icon: CalendarDays,
-  },
-  {
-    title: 'Online Donations',
-    copy: 'Support the trust and its sacred community initiatives.',
-    action: 'Donate Now',
-    href: '/donate',
-    icon: HandHeart,
-  },
-  {
-    title: 'Annadanam',
-    copy: 'Help us offer prasadam and nourishing meals to devotees.',
-    action: 'Support Annadanam',
-    href: '/donate',
-    icon: UtensilsCrossed,
   },
   {
     title: 'Temple Timings',
@@ -116,7 +99,6 @@ export default function HomePage() {
             </p>
             <div className="hero-actions">
               <Link to="/poojas" className="btn-primary hero-button"><CalendarDays size={19} /> Book Seva</Link>
-              <button type="button" onClick={() => window.dispatchEvent(new Event('open-donation-modal'))} className="hero-donate"><HandHeart size={19} /> Donate Now</button>
             </div>
           </div>
         </div>
@@ -135,14 +117,7 @@ export default function HomePage() {
       </section>
 
       <section className="page-container quick-grid" aria-label="Temple services">
-        {quickLinks.map(({ title, copy, action, href, icon: Icon }) => href === '/donate' ? (
-          <button type="button" onClick={() => window.dispatchEvent(new Event('open-donation-modal'))} key={title} className="quick-card group">
-            <div className="quick-icon"><Icon size={26} strokeWidth={1.8} /></div>
-            <h2>{title}</h2>
-            <p>{copy}</p>
-            <span>{action} <ArrowRight size={14} /></span>
-          </button>
-        ) : (
+        {quickLinks.map(({ title, copy, action, href, icon: Icon }) => (
           <Link to={href} key={title} className="quick-card group">
             <div className="quick-icon"><Icon size={26} strokeWidth={1.8} /></div>
             <h2>{title}</h2>

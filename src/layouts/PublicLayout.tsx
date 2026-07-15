@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom'
-import { CreditCard, Facebook, Heart, Instagram, LayoutDashboard, LogOut, Mail, MapPin, Menu, Phone, User, UserPlus, X, Youtube } from 'lucide-react'
+import { CreditCard, Facebook, Instagram, LayoutDashboard, LogOut, Mail, MapPin, Menu, Phone, User, UserPlus, X, Youtube } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
-import { DonationModal } from '../pages/public/DonationsPage'
 
 const TRUST_NAME = 'Shri Tripura Sundari Lalithambe Trust'
 
@@ -17,7 +16,6 @@ export default function PublicLayout() {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const [accountOpen, setAccountOpen] = useState(false)
-  const [donationOpen, setDonationOpen] = useState(false)
   const location = useLocation()
   const navigate = useNavigate()
   const { user, profile, signOut } = useAuth()
@@ -33,12 +31,6 @@ export default function PublicLayout() {
     setAccountOpen(false)
     window.scrollTo({ top: 0, behavior: 'auto' })
   }, [location.pathname])
-
-  useEffect(() => {
-    const openDonation = () => setDonationOpen(true)
-    window.addEventListener('open-donation-modal', openDonation)
-    return () => window.removeEventListener('open-donation-modal', openDonation)
-  }, [])
 
   const handleSignOut = async () => {
     await signOut()
@@ -63,7 +55,6 @@ export default function PublicLayout() {
 
             <div className="nav-actions">
               <Link to="/membership" className="membership-button">Membership</Link>
-              <button onClick={() => setDonationOpen(true)} className="donate-button"><Heart size={16} /> Donate</button>
               <button onClick={() => setAccountOpen(true)} className="account-menu-button" aria-label="Open My Account" title="My Account"><Menu size={21} /></button>
               <button className="mobile-toggle" onClick={() => setMobileOpen(!mobileOpen)} aria-label="Toggle menu" aria-expanded={mobileOpen}>
                 {mobileOpen ? <X size={23} /> : <Menu size={23} />}
@@ -77,7 +68,6 @@ export default function PublicLayout() {
             <div className="page-container">
               {navLinks.map(link => <Link key={link.href} to={link.href} className={location.pathname === link.href ? 'active' : ''}>{link.label}</Link>)}
               <Link to="/membership">Membership</Link>
-              <button onClick={() => { setDonationOpen(true); setMobileOpen(false) }}>Donate</button>
               {user ? <>
                 <button onClick={() => { setAccountOpen(true); setMobileOpen(false) }}>My Account</button>
                 <button onClick={handleSignOut}>Sign Out</button>
@@ -91,7 +81,6 @@ export default function PublicLayout() {
       </header>
 
       <main className="flex-1"><Outlet /></main>
-      <DonationModal open={donationOpen} onClose={() => setDonationOpen(false)} />
       {accountOpen && <div className="account-drawer-layer" onMouseDown={event => event.target === event.currentTarget && setAccountOpen(false)}>
         <aside className="account-drawer" aria-label="My account">
           <div className="drawer-head"><div><span>Namaskaram</span><h2>My Account</h2></div><button onClick={() => setAccountOpen(false)} aria-label="Close account"><X /></button></div>
@@ -100,12 +89,11 @@ export default function PublicLayout() {
             <nav>
               <Link to="/portal" onClick={() => setAccountOpen(false)}><LayoutDashboard /> Devotee Dashboard</Link>
               <Link to="/portal/profile" onClick={() => setAccountOpen(false)}><User /> Profile & Membership</Link>
-              <Link to="/portal/donations" onClick={() => setAccountOpen(false)}><Heart /> My Donations</Link>
               <Link to="/membership" onClick={() => setAccountOpen(false)}><CreditCard /> Become a Member</Link>
               {profile?.role === 'admin' && <Link to="/admin" onClick={() => setAccountOpen(false)}><LayoutDashboard /> Admin Portal</Link>}
             </nav>
             <button className="drawer-signout" onClick={handleSignOut}><LogOut /> Sign Out</button>
-          </> : <div className="drawer-guest"><User size={42} /><h3>Welcome, devotee</h3><p>Sign in to manage bookings, donations and your membership subscription.</p><Link to="/login" onClick={() => setAccountOpen(false)} className="btn-primary">Sign In</Link><Link to="/register" onClick={() => setAccountOpen(false)} className="btn-secondary"><UserPlus size={16} /> Create Account</Link></div>}
+          </> : <div className="drawer-guest"><User size={42} /><h3>Welcome, devotee</h3><p>Sign in to manage bookings and your membership subscription.</p><Link to="/login" onClick={() => setAccountOpen(false)} className="btn-primary">Sign In</Link><Link to="/register" onClick={() => setAccountOpen(false)} className="btn-secondary"><UserPlus size={16} /> Create Account</Link></div>}
         </aside>
       </div>}
       <Footer />
@@ -139,7 +127,6 @@ function Footer() {
           <h4>Quick Links</h4>
           <Link to="/about">› About</Link>
           <Link to="/poojas">› Sevas & Poojas</Link>
-          <button type="button" onClick={() => window.dispatchEvent(new Event('open-donation-modal'))}>› Donations</button>
           <Link to="/membership">› Membership</Link>
           <Link to="/contact">› Contact Us</Link>
         </div>
