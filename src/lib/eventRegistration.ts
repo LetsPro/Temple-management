@@ -9,17 +9,33 @@ type EventPlan = Database['public']['Tables']['event_plans']['Row']
 export async function registerForEvent(input: {
   event: Event
   plan?: EventPlan
-  user: User
+  user?: User | null
   profile?: { full_name?: string; email?: string; mobile?: string } | null
+  guest?: { name: string; email: string; mobile: string }
 }) {
-  const { event, plan, user, profile } = input
-  const { data: existing, error: existingError } = await supabase
-    .from('event_registrations')
-    .select('id,status,payment_status')
-    .eq('event_id', event.id)
-    .eq('devotee_id', user.id)
-    .maybeSingle()
-  if (existingError) throw existingError
+  const { event, plan, user, profile, guest } = input
+  if (!user && (!guest?.name.trim() || !guest.email.includes('@') || guest.mobile.replace(/\D/g, '').length < 10)) {
+    throw new Error('Enter your name, email and valid mobile number to continue.')
+  }
+
+  let existing: { id: string; status: string; payment_status: string } | null = null
+  if (user) {
+    const { data, error } = await supabase
+      .from('event_registrations')
+      .select('id,status,payment_status')
+      .eq('event_id', event.id)
+      .eq('devotee_id', user.id)
+      .maybeSingle()
+    if (error) throw error
+    existing = data
+  }
+
+  const registrant = {
+    devotee_id: user?.id || null,
+    guest_name: user ? '' : guest!.name.trim(),
+    guest_email: user ? '' : guest!.email.trim(),
+    guest_mobile: user ? '' : guest!.mobile.trim(),
+  }
 
   if (event.pricing_type === 'free') {
     if (existing) {
@@ -34,7 +50,7 @@ export async function registerForEvent(input: {
     }
     const { data: registration, error } = await supabase.from('event_registrations').insert({
       event_id: event.id,
-      devotee_id: user.id,
+      ...registrant,
       event_plan_id: null,
       participant_count: 1,
       amount: 0,
@@ -60,7 +76,7 @@ export async function registerForEvent(input: {
   } else {
     const { data: registration, error } = await supabase.from('event_registrations').insert({
       event_id: event.id,
-      devotee_id: user.id,
+      ...registrant,
       event_plan_id: plan.id,
       participant_count: 1,
       amount: Number(plan.price),
@@ -78,9 +94,9 @@ export async function registerForEvent(input: {
     title: 'Shri Tripura Sundari Lalithambe Trust',
     description: `${event.title} · ${plan.name}`,
     prefill: {
-      name: profile?.full_name || user.user_metadata?.full_name || '',
-      email: profile?.email || user.email,
-      contact: profile?.mobile || '',
+      name: user ? (profile?.full_name || user.user_metadata?.full_name || '') : guest!.name,
+      email: user ? (profile?.email || user.email) : guest!.email,
+      contact: user ? (profile?.mobile || '') : guest!.mobile,
     },
   })
   return registrationId

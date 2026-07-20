@@ -574,7 +574,10 @@ export interface Database {
         Row: {
           id: string
           event_id: string
-          devotee_id: string
+          devotee_id: string | null
+          guest_name: string
+          guest_email: string
+          guest_mobile: string
           event_plan_id: string | null
           amount: number
           payment_status: 'not_required' | 'pending' | 'paid' | 'failed' | 'refunded'
@@ -586,7 +589,10 @@ export interface Database {
         Insert: {
           id?: string
           event_id: string
-          devotee_id?: string
+          devotee_id?: string | null
+          guest_name?: string
+          guest_email?: string
+          guest_mobile?: string
           event_plan_id?: string | null
           amount?: number
           payment_status?: 'not_required' | 'pending' | 'paid' | 'failed' | 'refunded'
@@ -596,7 +602,10 @@ export interface Database {
         }
         Update: {
           event_id?: string
-          devotee_id?: string
+          devotee_id?: string | null
+          guest_name?: string
+          guest_email?: string
+          guest_mobile?: string
           event_plan_id?: string | null
           amount?: number
           payment_status?: 'not_required' | 'pending' | 'paid' | 'failed' | 'refunded'

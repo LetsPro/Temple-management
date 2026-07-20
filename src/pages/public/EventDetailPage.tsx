@@ -20,6 +20,7 @@ export default function EventDetailPage() {
   const [registered, setRegistered] = useState(false)
   const [registrationLoading, setRegistrationLoading] = useState(false)
   const [selectedPlanId, setSelectedPlanId] = useState('')
+  const [guest, setGuest] = useState({ name: '', email: '', mobile: '' })
 
   useEffect(() => {
     async function load() {
@@ -51,12 +52,11 @@ export default function EventDetailPage() {
   }, [slug, user, navigate])
 
   const handleRegister = async () => {
-    if (!user) { navigate('/login'); return }
     if (!event) return
     const selectedPlan = event.event_plans.find(plan => plan.id === selectedPlanId)
     setRegistrationLoading(true)
     try {
-      await registerForEvent({ event, plan: selectedPlan, user, profile })
+      await registerForEvent({ event, plan: selectedPlan, user, profile, guest })
       setRegistered(true)
       toast.success(event.pricing_type === 'paid' ? 'Payment verified and registration confirmed! 🙏' : 'Successfully registered! 🙏')
     } catch (error) {
@@ -139,6 +139,18 @@ export default function EventDetailPage() {
             </div>
           )}
 
+          {canRegister && !registered && !user && (
+            <div className="mb-4 rounded-xl border border-temple-border bg-cream-50 p-3">
+              <div className="font-semibold text-sm text-temple-text mb-2">Guest registration details</div>
+              <div className="space-y-2">
+                <label className="block"><span className="label text-xs">Full Name *</span><input value={guest.name} onChange={change => setGuest(current => ({ ...current, name: change.target.value }))} className="input-field py-2 text-sm" autoComplete="name" /></label>
+                <label className="block"><span className="label text-xs">Mobile Number *</span><input value={guest.mobile} onChange={change => setGuest(current => ({ ...current, mobile: change.target.value }))} className="input-field py-2 text-sm" inputMode="tel" autoComplete="tel" /></label>
+                <label className="block"><span className="label text-xs">Email Address *</span><input type="email" value={guest.email} onChange={change => setGuest(current => ({ ...current, email: change.target.value }))} className="input-field py-2 text-sm" autoComplete="email" /></label>
+              </div>
+              <p className="text-xs text-temple-muted mt-2">No account or sign in is required.</p>
+            </div>
+          )}
+
           {canRegister && (
             registered ? (
               <div className="space-y-2">
@@ -153,7 +165,6 @@ export default function EventDetailPage() {
             )
           )}
 
-          {canRegister && !user && <p className="mt-2 text-xs text-center text-temple-muted">Please <Link to="/login" className="text-vermilion-600 font-medium">sign in</Link> to register</p>}
           {!event.registration_enabled && <div className="bg-cream-100 rounded-xl p-3 text-sm text-temple-muted text-center">No registration required — open to all devotees</div>}
         </div>
       </div>

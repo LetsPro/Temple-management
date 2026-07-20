@@ -21,7 +21,7 @@ Deno.serve(async (req: Request) => {
       : payment_type === 'membership'
         ? 'id,plan_id,devotee_id,membership_number,payment_status'
         : payment_type === 'event'
-          ? 'id,event_id,event_plan_id,devotee_id,payment_status,status'
+          ? 'id,event_id,event_plan_id,devotee_id,guest_name,guest_email,guest_mobile,payment_status,status'
           : 'id,total_amount,booking_number,devotee_id,payment_status'
     const { data: record, error } = await admin.from(table).select(fields).eq('id', reference_id).single()
     if (error || !record) return json({ error: "Payment record not found" }, 404)
@@ -35,10 +35,18 @@ Deno.serve(async (req: Request) => {
       const { data: plan } = await admin.from('membership_plans').select('amount').eq('id', (record as Record<string, unknown>).plan_id).single()
       amount = Number(plan?.amount || 0)
     } else if (payment_type === 'event') {
-      const authHeader = req.headers.get('Authorization') || ''
-      const token = authHeader.replace(/^Bearer\s+/i, '')
-      const { data: authData } = await admin.auth.getUser(token)
-      if (!authData.user || authData.user.id !== (record as Record<string, unknown>).devotee_id) return json({ error: "Unauthorized" }, 401)
+      const devoteeId = (record as Record<string, unknown>).devotee_id as string | null
+      if (devoteeId) {
+        const authHeader = req.headers.get('Authorization') || ''
+        const token = authHeader.replace(/^Bearer\s+/i, '')
+        const { data: authData } = await admin.auth.getUser(token)
+        if (!authData.user || authData.user.id !== devoteeId) return json({ error: "Unauthorized" }, 401)
+      } else {
+        const guestName = String((record as Record<string, unknown>).guest_name || '').trim()
+        const guestEmail = String((record as Record<string, unknown>).guest_email || '').trim()
+        const guestMobile = String((record as Record<string, unknown>).guest_mobile || '').replace(/\D/g, '')
+        if (guestName.length < 2 || guestEmail.length < 5 || guestMobile.length < 10) return json({ error: "Guest details are incomplete" }, 400)
+      }
       if ((record as Record<string, unknown>).payment_status === 'paid') return json({ error: "Event registration is already paid" }, 409)
 
       const { data: event } = await admin.from('events').select('pricing_type,registration_enabled,is_published,end_datetime,registration_closing_date').eq('id', (record as Record<string, unknown>).event_id).single()

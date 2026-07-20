@@ -170,9 +170,10 @@ export default function BookingFlow() {
       }
 
       // Insert participants
-      await supabase.from('booking_participants').insert(
+      const { error: participantError } = await supabase.from('booking_participants').insert(
         participants.map(p => ({ booking_id: bookingId, name: p.name, gotram: p.gotram || '', nakshatra: p.nakshatra || '' }))
       )
+      if (participantError) throw participantError
 
       const payer = user && profile ? { name: profile.full_name, email: profile.email, mobile: profile.mobile } : guest
       const payment = await payWithRazorpay({ paymentType: 'booking', referenceId: bookingId, title: 'Shri Tripura Sundari Lalithambe Trust', description: selectedService.name, prefill: { name: payer.name, email: payer.email, contact: payer.mobile } })
