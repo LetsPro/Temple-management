@@ -363,7 +363,7 @@ export interface Database {
       payments: {
         Row: {
           id: string
-          payment_type: 'booking' | 'donation' | 'membership'
+          payment_type: 'booking' | 'donation' | 'membership' | 'event'
           reference_id: string
           user_id: string | null
           razorpay_order_id: string
@@ -378,7 +378,7 @@ export interface Database {
         }
         Insert: {
           id?: string
-          payment_type: 'booking' | 'donation'
+          payment_type: 'booking' | 'donation' | 'membership' | 'event'
           reference_id: string
           user_id?: string | null
           razorpay_order_id?: string
@@ -390,7 +390,7 @@ export interface Database {
           paid_at?: string | null
         }
         Update: {
-          payment_type?: 'booking' | 'donation'
+          payment_type?: 'booking' | 'donation' | 'membership' | 'event'
           reference_id?: string
           user_id?: string | null
           razorpay_order_id?: string
@@ -500,6 +500,7 @@ export interface Database {
           registration_enabled: boolean
           capacity: number | null
           registration_closing_date: string | null
+          pricing_type: 'free' | 'paid'
           is_published: boolean
           is_featured: boolean
           display_order: number
@@ -518,6 +519,7 @@ export interface Database {
           registration_enabled?: boolean
           capacity?: number | null
           registration_closing_date?: string | null
+          pricing_type?: 'free' | 'paid'
           is_published?: boolean
           is_featured?: boolean
           display_order?: number
@@ -533,8 +535,37 @@ export interface Database {
           registration_enabled?: boolean
           capacity?: number | null
           registration_closing_date?: string | null
+          pricing_type?: 'free' | 'paid'
           is_published?: boolean
           is_featured?: boolean
+          display_order?: number
+        }
+        Relationships: []
+      }
+      event_plans: {
+        Row: {
+          id: string
+          event_id: string
+          name: string
+          price: number
+          is_active: boolean
+          display_order: number
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          event_id: string
+          name: string
+          price: number
+          is_active?: boolean
+          display_order?: number
+        }
+        Update: {
+          event_id?: string
+          name?: string
+          price?: number
+          is_active?: boolean
           display_order?: number
         }
         Relationships: []
@@ -544,25 +575,34 @@ export interface Database {
           id: string
           event_id: string
           devotee_id: string
+          event_plan_id: string | null
+          amount: number
+          payment_status: 'not_required' | 'pending' | 'paid' | 'failed' | 'refunded'
           participant_count: number
           notes: string
-          status: 'registered' | 'cancelled' | 'attended'
+          status: 'pending' | 'registered' | 'cancelled' | 'attended'
           created_at: string
         }
         Insert: {
           id?: string
           event_id: string
           devotee_id?: string
+          event_plan_id?: string | null
+          amount?: number
+          payment_status?: 'not_required' | 'pending' | 'paid' | 'failed' | 'refunded'
           participant_count?: number
           notes?: string
-          status?: 'registered' | 'cancelled' | 'attended'
+          status?: 'pending' | 'registered' | 'cancelled' | 'attended'
         }
         Update: {
           event_id?: string
           devotee_id?: string
+          event_plan_id?: string | null
+          amount?: number
+          payment_status?: 'not_required' | 'pending' | 'paid' | 'failed' | 'refunded'
           participant_count?: number
           notes?: string
-          status?: 'registered' | 'cancelled' | 'attended'
+          status?: 'pending' | 'registered' | 'cancelled' | 'attended'
         }
         Relationships: []
       }

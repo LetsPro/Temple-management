@@ -10,13 +10,19 @@ Deno.serve(async (req: Request) => {
 
   try {
     const { payment_type, reference_id } = await req.json()
-    if (!['booking', 'donation', 'membership'].includes(payment_type) || !reference_id) return json({ error: "Invalid payment reference" }, 400)
+    if (!['booking', 'donation', 'membership', 'event'].includes(payment_type) || !reference_id) return json({ error: "Invalid payment reference" }, 400)
 
     const url = Deno.env.get("SUPABASE_URL")!
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     const admin = createClient(url, serviceKey, { auth: { persistSession: false } })
-    const table = payment_type === 'donation' ? 'donations' : payment_type === 'membership' ? 'memberships' : 'bookings'
-    const fields = payment_type === 'donation' ? 'id,amount,donation_number,payment_status' : payment_type === 'membership' ? 'id,plan_id,devotee_id,membership_number,payment_status' : 'id,total_amount,booking_number,devotee_id,payment_status'
+    const table = payment_type === 'donation' ? 'donations' : payment_type === 'membership' ? 'memberships' : payment_type === 'event' ? 'event_registrations' : 'bookings'
+    const fields = payment_type === 'donation'
+      ? 'id,amount,donation_number,payment_status'
+      : payment_type === 'membership'
+        ? 'id,plan_id,devotee_id,membership_number,payment_status'
+        : payment_type === 'event'
+          ? 'id,event_id,event_plan_id,devotee_id,payment_status,status'
+          : 'id,total_amount,booking_number,devotee_id,payment_status'
     const { data: record, error } = await admin.from(table).select(fields).eq('id', reference_id).single()
     if (error || !record) return json({ error: "Payment record not found" }, 404)
 
@@ -28,6 +34,22 @@ Deno.serve(async (req: Request) => {
       if (!authData.user || authData.user.id !== (record as Record<string, unknown>).devotee_id) return json({ error: "Unauthorized" }, 401)
       const { data: plan } = await admin.from('membership_plans').select('amount').eq('id', (record as Record<string, unknown>).plan_id).single()
       amount = Number(plan?.amount || 0)
+    } else if (payment_type === 'event') {
+      const authHeader = req.headers.get('Authorization') || ''
+      const token = authHeader.replace(/^Bearer\s+/i, '')
+      const { data: authData } = await admin.auth.getUser(token)
+      if (!authData.user || authData.user.id !== (record as Record<string, unknown>).devotee_id) return json({ error: "Unauthorized" }, 401)
+      if ((record as Record<string, unknown>).payment_status === 'paid') return json({ error: "Event registration is already paid" }, 409)
+
+      const { data: event } = await admin.from('events').select('pricing_type,registration_enabled,is_published,end_datetime,registration_closing_date').eq('id', (record as Record<string, unknown>).event_id).single()
+      if (!event?.is_published || !event.registration_enabled || event.pricing_type !== 'paid') return json({ error: "This event is not accepting paid registrations" }, 400)
+      if (new Date(event.end_datetime) <= new Date() || (event.registration_closing_date && new Date(event.registration_closing_date) <= new Date())) return json({ error: "Registration for this event is closed" }, 400)
+
+      const { data: plan } = await admin.from('event_plans').select('price,is_active').eq('id', (record as Record<string, unknown>).event_plan_id).eq('event_id', (record as Record<string, unknown>).event_id).single()
+      if (!plan?.is_active) return json({ error: "The selected event plan is unavailable" }, 400)
+      amount = Number(plan.price || 0)
+
+      await admin.from('event_registrations').update({ amount, payment_status: 'pending', status: 'pending' }).eq('id', reference_id)
     }
     if (!amount) return json({ error: "Invalid amount" }, 400)
 
@@ -35,7 +57,7 @@ Deno.serve(async (req: Request) => {
     const keySecret = Deno.env.get("RAZORPAY_KEY_SECRET")
     if (!keyId || !keySecret) return json({ error: "Razorpay is not configured" }, 503)
 
-    const receipt = String((record as Record<string, unknown>).donation_number || (record as Record<string, unknown>).membership_number || (record as Record<string, unknown>).booking_number).slice(0, 40)
+    const receipt = String((record as Record<string, unknown>).donation_number || (record as Record<string, unknown>).membership_number || (record as Record<string, unknown>).booking_number || `EVT-${reference_id}`).slice(0, 40)
     const response = await fetch("https://api.razorpay.com/v1/orders", {
       method: "POST",
       headers: { "Content-Type": "application/json", "Authorization": `Basic ${btoa(`${keyId}:${keySecret}`)}` },

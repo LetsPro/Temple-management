@@ -9,7 +9,7 @@ Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: cors })
   try {
     const { payment_type, reference_id, razorpay_order_id, razorpay_payment_id, razorpay_signature } = await req.json()
-    if (!['booking', 'donation', 'membership'].includes(payment_type) || !reference_id || !razorpay_order_id || !razorpay_payment_id || !razorpay_signature) return json({ error: 'Missing verification data' }, 400)
+    if (!['booking', 'donation', 'membership', 'event'].includes(payment_type) || !reference_id || !razorpay_order_id || !razorpay_payment_id || !razorpay_signature) return json({ error: 'Missing verification data' }, 400)
 
     const secret = Deno.env.get('RAZORPAY_KEY_SECRET')
     if (!secret) return json({ error: 'Razorpay is not configured' }, 503)
@@ -30,6 +30,8 @@ Deno.serve(async (req: Request) => {
       const { data: plan } = await admin.from('membership_plans').select('duration_months').eq('id', membership?.plan_id).single()
       const expires = new Date(); expires.setMonth(expires.getMonth() + Number(plan?.duration_months || 0))
       await admin.from('memberships').update({ payment_status: 'paid', status: 'active', starts_at: paidAt, expires_at: expires.toISOString() }).eq('id', reference_id)
+    } else if (payment_type === 'event') {
+      await admin.from('event_registrations').update({ payment_status: 'paid', status: 'registered', amount: payment.amount }).eq('id', reference_id)
     } else {
       const { data: booking } = await admin.from('bookings').update({ payment_status: 'paid', booking_status: 'confirmed' }).eq('id', reference_id).select('booking_number').single()
       return json({ verified: true, booking_number: booking?.booking_number })

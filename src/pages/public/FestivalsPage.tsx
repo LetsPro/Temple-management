@@ -7,7 +7,8 @@ import { format, isFuture, isPast } from 'date-fns'
 import { Skeleton } from '../../components/ui/Skeleton'
 import EmptyState from '../../components/ui/EmptyState'
 
-type Event = Database['public']['Tables']['events']['Row']
+type EventPlan = Database['public']['Tables']['event_plans']['Row']
+type Event = Database['public']['Tables']['events']['Row'] & { event_plans: EventPlan[] }
 
 export default function FestivalsPage() {
   const [events, setEvents] = useState<Event[]>([])
@@ -15,8 +16,8 @@ export default function FestivalsPage() {
   const [tab, setTab] = useState<'upcoming' | 'past'>('upcoming')
 
   useEffect(() => {
-    supabase.from('events').select('*').eq('is_published', true).order('start_datetime').then(({ data }) => {
-      setEvents(data || [])
+    supabase.from('events').select('*, event_plans(*)').eq('is_published', true).order('start_datetime').then(({ data }) => {
+      setEvents((data || []) as Event[])
       setLoading(false)
     })
   }, [])
@@ -76,6 +77,8 @@ function EventCard({ event }: { event: Event }) {
   const start = new Date(event.start_datetime)
   const end = new Date(event.end_datetime)
   const isMultiDay = format(start, 'yyyy-MM-dd') !== format(end, 'yyyy-MM-dd')
+  const activePlans = (event.event_plans || []).filter(plan => plan.is_active)
+  const lowestPrice = activePlans.length ? Math.min(...activePlans.map(plan => Number(plan.price))) : null
 
   return (
     <div className="card hover:shadow-temple-md transition-all duration-200">
@@ -92,6 +95,9 @@ function EventCard({ event }: { event: Event }) {
         {event.registration_enabled && (
           <span className="text-xs bg-green-50 text-green-700 border border-green-200 px-2.5 py-0.5 rounded-full font-medium">Registration Open</span>
         )}
+        <span className={`text-xs px-2.5 py-0.5 rounded-full font-medium ${event.pricing_type === 'paid' ? 'bg-blue-50 text-blue-700' : 'bg-emerald-50 text-emerald-700'}`}>
+          {event.pricing_type === 'paid' ? lowestPrice ? `From ₹${lowestPrice.toLocaleString('en-IN')}` : 'Paid' : 'Free'}
+        </span>
       </div>
 
       <h3 className="font-bold text-temple-text text-lg mb-2">{event.title}</h3>

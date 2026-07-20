@@ -1,6 +1,6 @@
 import { supabase } from './supabase'
 
-type PaymentType = 'booking' | 'donation' | 'membership'
+type PaymentType = 'booking' | 'donation' | 'membership' | 'event'
 type CheckoutPrefill = { name: string; email?: string; contact: string }
 type PaymentResponse = { razorpay_order_id: string; razorpay_payment_id: string; razorpay_signature: string }
 
