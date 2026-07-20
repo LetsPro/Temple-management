@@ -9,7 +9,7 @@ const navLinks = [
   { href: '/', label: 'Home' },
   { href: '/about', label: 'About' },
   { href: '/poojas', label: 'Sevas / Pooja Booking' },
-  { href: '/festivals', label: 'Events' },
+  { href: '/events', label: 'Events' },
 ]
 
 export default function PublicLayout() {

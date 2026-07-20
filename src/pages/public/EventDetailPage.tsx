@@ -29,7 +29,7 @@ export default function EventDetailPage() {
         .eq('slug', slug!)
         .eq('is_published', true)
         .maybeSingle()
-      if (!data) { navigate('/festivals'); return }
+      if (!data) { navigate('/events'); return }
       const typedEvent = data as Event
       typedEvent.event_plans = (typedEvent.event_plans || []).filter(plan => plan.is_active).sort((a, b) => a.display_order - b.display_order)
       setEvent(typedEvent)
@@ -87,9 +87,9 @@ export default function EventDetailPage() {
 
   return (
     <div className="page-container py-10">
-      <Link to="/festivals" className="inline-flex items-center gap-1.5 text-temple-muted hover:text-temple-text text-sm mb-6 group">
+      <Link to="/events" className="inline-flex items-center gap-1.5 text-temple-muted hover:text-temple-text text-sm mb-6 group">
         <ArrowLeft size={16} className="group-hover:-translate-x-0.5 transition-transform" />
-        Back to Festivals
+        Back to Events
       </Link>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

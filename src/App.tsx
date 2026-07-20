@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { Routes, Route, Navigate, useParams } from 'react-router-dom'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 
 // Layouts
@@ -58,6 +58,11 @@ function ProtectedRoute({ children, requireAdmin = false }: { children: React.Re
   return <>{children}</>
 }
 
+function LegacyFestivalRedirect() {
+  const { slug } = useParams()
+  return <Navigate to={slug ? `/events/${slug}` : '/events'} replace />
+}
+
 function App() {
   return (
     <AuthProvider>
@@ -69,8 +74,10 @@ function App() {
           <Route path="/poojas" element={<PoojaServicesPage />} />
           <Route path="/poojas/:slug" element={<PoojaServiceDetailPage />} />
           <Route path="/book/:serviceId" element={<div className="page-container py-10"><BookingFlow /></div>} />
-          <Route path="/festivals" element={<FestivalsPage />} />
-          <Route path="/festivals/:slug" element={<EventDetailPage />} />
+          <Route path="/events" element={<FestivalsPage />} />
+          <Route path="/events/:slug" element={<EventDetailPage />} />
+          <Route path="/festivals" element={<LegacyFestivalRedirect />} />
+          <Route path="/festivals/:slug" element={<LegacyFestivalRedirect />} />
           <Route path="/donate" element={<Navigate to="/" replace />} />
           <Route path="/membership" element={<MembershipPage />} />
           <Route path="/contact" element={<ContactPage />} />

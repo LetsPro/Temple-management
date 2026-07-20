@@ -138,7 +138,7 @@ export default function DevoteeEvents() {
                       {event.pricing_type === 'paid' && event.event_plans.length === 0 && <span className="text-xs text-amber-700 bg-amber-50 px-2.5 py-1 rounded-full">Plans not available</span>}
                     </div>
                   </div>
-                  <Link to={`/festivals/${event.slug}`} className="inline-flex items-center gap-1 text-xs font-semibold text-vermilion-700 mt-3">View event details <ArrowRight size={12} /></Link>
+                  <Link to={`/events/${event.slug}`} className="inline-flex items-center gap-1 text-xs font-semibold text-vermilion-700 mt-3">View event details <ArrowRight size={12} /></Link>
                 </div>
               )
             })}

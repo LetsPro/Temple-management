@@ -109,7 +109,7 @@ function EventCard({ event }: { event: Event }) {
         {event.capacity && <div className="flex items-center gap-2"><Users size={13} className="text-saffron-500" /> Capacity: {event.capacity}</div>}
       </div>
 
-      <Link to={`/festivals/${event.slug}`} className="btn-secondary w-full justify-center">
+      <Link to={`/events/${event.slug}`} className="btn-secondary w-full justify-center">
         View Details <ArrowRight size={14} />
       </Link>
     </div>

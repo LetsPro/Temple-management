@@ -32,7 +32,7 @@ const quickLinks = [
     title: 'Upcoming Events',
     copy: 'Stay updated with festivals, sevas and special celebrations.',
     action: 'View All Events',
-    href: '/festivals',
+    href: '/events',
     icon: CalendarDays,
   },
   {
