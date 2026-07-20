@@ -95,7 +95,10 @@ export default function EventDetailPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2">
           {event.banner_image_url ? (
-            <img src={event.banner_image_url} alt={event.title} className="w-full h-72 object-cover rounded-3xl mb-6" loading="lazy" />
+            <div className="relative w-full aspect-video max-h-[32rem] overflow-hidden rounded-3xl mb-6 bg-cream-100">
+              <img src={event.banner_image_url} alt="" aria-hidden="true" className="absolute inset-0 w-full h-full object-cover scale-110 blur-2xl opacity-30" />
+              <img src={event.banner_image_url} alt={event.title} className="relative w-full h-full object-contain" loading="lazy" />
+            </div>
           ) : (
             <div className="w-full h-72 bg-gradient-to-br from-vermilion-50 to-saffron-50 rounded-3xl mb-6 flex items-center justify-center text-7xl">🎊</div>
           )}

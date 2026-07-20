@@ -266,7 +266,7 @@ export default function AdminEvents() {
                       <span><strong className="block text-sm text-temple-text">Upload thumbnail</strong><small className="text-temple-muted">JPG, PNG, WEBP or GIF · max 5 MB</small></span>
                       <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" className="sr-only" onChange={event => chooseThumbnail(event.target.files?.[0])} />
                     </label>
-                    {thumbnailPreview && <div className="relative"><img src={thumbnailPreview} alt="Event thumbnail preview" className="w-40 h-24 object-cover rounded-xl border border-temple-border" /><button type="button" onClick={() => { setThumbnailFile(null); setThumbnailPreview('') }} className="absolute -top-2 -right-2 bg-white border border-temple-border rounded-full p-1 shadow" aria-label="Remove thumbnail"><X size={14} /></button></div>}
+                    {thumbnailPreview && <div className="relative w-full sm:w-64 h-36 rounded-xl border border-temple-border bg-cream-100 overflow-hidden"><img src={thumbnailPreview} alt="Event thumbnail preview" className="w-full h-full object-contain" /><span className="absolute bottom-2 left-2 rounded-full bg-black/60 px-2 py-0.5 text-[10px] font-semibold text-white">Preview</span><button type="button" onClick={() => { setThumbnailFile(null); setThumbnailPreview('') }} className="absolute top-2 right-2 bg-white border border-temple-border rounded-full p-1 shadow" aria-label="Remove thumbnail"><X size={14} /></button></div>}
                   </div>
                 </div>
 
