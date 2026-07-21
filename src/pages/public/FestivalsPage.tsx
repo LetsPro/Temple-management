@@ -83,7 +83,10 @@ function EventCard({ event }: { event: Event }) {
   return (
     <div className="card hover:shadow-temple-md transition-all duration-200">
       {event.banner_image_url ? (
-        <img src={event.banner_image_url} alt={event.title} className="w-full h-48 object-cover rounded-xl mb-4" loading="lazy" />
+        <div className="relative w-full h-48 sm:h-52 overflow-hidden rounded-xl mb-4 bg-cream-100">
+          <img src={event.banner_image_url} alt="" aria-hidden="true" className="absolute inset-0 w-full h-full object-cover scale-110 blur-xl opacity-20" />
+          <img src={event.banner_image_url} alt={event.title} className="relative w-full h-full object-contain" loading="lazy" />
+        </div>
       ) : (
         <div className="w-full h-48 bg-gradient-to-br from-vermilion-50 to-saffron-50 rounded-xl mb-4 flex items-center justify-center text-5xl">🎊</div>
       )}
