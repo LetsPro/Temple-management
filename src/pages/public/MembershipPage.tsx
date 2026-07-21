@@ -16,6 +16,7 @@ const fallbackPlans: Plan[] = [
 export default function MembershipPage() {
   const { user, profile, signIn } = useAuth()
   const [plans, setPlans] = useState<Plan[]>(fallbackPlans)
+  const [plansReady, setPlansReady] = useState(false)
   const [activePlan, setActivePlan] = useState<Plan | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [signingIn, setSigningIn] = useState(false)
@@ -26,7 +27,12 @@ export default function MembershipPage() {
 
   useEffect(() => {
     supabase.from('membership_plans').select('id,name,amount,duration_months,benefits').eq('is_active', true).order('display_order').then(({ data }) => {
-      if (data?.length) { const typed = data.map(item => ({ ...item, amount: Number(item.amount), benefits: Array.isArray(item.benefits) ? item.benefits.map(String) : [] })); setPlans(typed) }
+      if (data?.length) {
+        const typed = data.map(item => ({ ...item, amount: Number(item.amount), benefits: Array.isArray(item.benefits) ? item.benefits.map(String) : [] }))
+        setPlans(typed)
+        setActivePlan(current => current ? (typed.find(plan => plan.name === current.name) || current) : null)
+        setPlansReady(true)
+      }
     })
   }, [])
   useEffect(() => {
@@ -61,7 +67,7 @@ export default function MembershipPage() {
     if (form.mobile.replace(/\D/g, '').length < 10) missing.push('valid mobile number')
     if (missing.length) return toast.error(`Please enter: ${missing.join(', ')}.`)
     if (!termsAccepted) return toast.error('Please read and accept the Terms and Payment Terms.')
-    if (activePlan.id === 'annual' || activePlan.id === 'half-yearly' || activePlan.id === 'quarterly') return toast.error('Membership plans must be activated in the database before payment.')
+    if (!plansReady) return toast.error('Membership plans are temporarily unavailable. Please contact the temple office.', { id: 'membership-plans-unavailable' })
     setSubmitting(true)
     try {
       const membershipDetails = {
@@ -83,7 +89,7 @@ export default function MembershipPage() {
     <section className="membership-hero"><div className="page-container"><span>Devotion · Service · Belonging</span><h1>Patron Membership</h1><p>Join the Trust family and participate more deeply in sacred sevas, celebrations and community service.</p></div></section>
     <section className="page-container py-14">
       <div className="section-heading centered-heading"><span>Choose your membership</span><h2>Membership plans</h2><p>Benefits and fees are based on the supplied Trust membership form.</p></div>
-      <div className="membership-plans">{plans.map((plan, index) => <article key={plan.id} className="membership-plan-card">{index === 0 && <em>Most complete</em>}<Crown /><h3>{plan.name}</h3><strong>₹{plan.amount.toLocaleString('en-IN')}</strong><span>{plan.duration_months === 12 ? '1 year' : `${plan.duration_months} months`}</span><ul>{plan.benefits.map(benefit => <li key={benefit}><Check />{benefit}</li>)}</ul><button type="button" onClick={() => { setActivePlan(plan); setTermsAccepted(false) }} className="btn-primary membership-join">Join</button></article>)}</div>
+      <div className="membership-plans">{plans.map((plan, index) => <article key={plan.id} className="membership-plan-card">{index === 0 && <em>Most complete</em>}<Crown /><h3>{plan.name}</h3><strong>₹{plan.amount.toLocaleString('en-IN')}</strong><span>{plan.duration_months === 12 ? '1 year' : `${plan.duration_months} months`}</span><ul>{plan.benefits.map(benefit => <li key={benefit}><Check />{benefit}</li>)}</ul><button type="button" disabled={!plansReady} onClick={() => { setActivePlan(plan); setTermsAccepted(false) }} className="btn-primary membership-join">{plansReady ? 'Join' : 'Temporarily unavailable'}</button></article>)}</div>
     </section>
     {activePlan && <div className="payment-modal" role="dialog" aria-modal="true" aria-labelledby="membership-modal-title" onMouseDown={event => event.target === event.currentTarget && setActivePlan(null)}>
       <div className="payment-modal-card membership-join-modal">
