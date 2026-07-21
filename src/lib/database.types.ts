@@ -60,6 +60,7 @@ export interface Database {
           phone: string
           email: string
           google_maps_url: string
+          footer_hours: string
           social_media: Json
           receipt_prefix: string
           receipt_footer_note: string
@@ -84,6 +85,7 @@ export interface Database {
           phone?: string
           email?: string
           google_maps_url?: string
+          footer_hours?: string
           social_media?: Json
           receipt_prefix?: string
           receipt_footer_note?: string
@@ -105,6 +107,7 @@ export interface Database {
           phone?: string
           email?: string
           google_maps_url?: string
+          footer_hours?: string
           social_media?: Json
           receipt_prefix?: string
           receipt_footer_note?: string

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Plus, CreditCard as Edit, X, Save, ToggleLeft, ToggleRight, ImagePlus, Trash2, IndianRupee } from 'lucide-react'
+import { Plus, CreditCard as Edit, X, Save, ToggleLeft, ToggleRight, ImagePlus, Trash2, IndianRupee, GripVertical } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -13,7 +13,7 @@ import toast from 'react-hot-toast'
 type EventRow = Database['public']['Tables']['events']['Row']
 type EventPlan = Database['public']['Tables']['event_plans']['Row']
 type Event = EventRow & { event_plans: EventPlan[] }
-type PlanDraft = { id?: string; name: string; price: number | '' }
+type PlanDraft = { clientKey: string; id?: string; name: string; price: number | '' }
 
 const schema = z.object({
   title: z.string().min(2, 'Enter an event title.'),
@@ -30,7 +30,7 @@ const schema = z.object({
 })
 type FormData = z.infer<typeof schema>
 
-const blankPlan = (): PlanDraft => ({ name: '', price: '' })
+const blankPlan = (): PlanDraft => ({ clientKey: crypto.randomUUID(), name: '', price: '' })
 
 export default function AdminEvents() {
   const [events, setEvents] = useState<Event[]>([])
@@ -39,6 +39,7 @@ export default function AdminEvents() {
   const [editing, setEditing] = useState<Event | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [plans, setPlans] = useState<PlanDraft[]>([blankPlan()])
+  const [draggingPlanKey, setDraggingPlanKey] = useState<string | null>(null)
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null)
   const [thumbnailPreview, setThumbnailPreview] = useState('')
 
@@ -63,6 +64,7 @@ export default function AdminEvents() {
 
   const openCreate = () => {
     setEditing(null)
+    setDraggingPlanKey(null)
     setPlans([blankPlan()])
     setThumbnailFile(null)
     setThumbnailPreview('')
@@ -75,8 +77,9 @@ export default function AdminEvents() {
 
   const openEdit = (event: Event) => {
     setEditing(event)
+    setDraggingPlanKey(null)
     const activePlans = (event.event_plans || []).filter(plan => plan.is_active).sort((a, b) => a.display_order - b.display_order)
-    setPlans(activePlans.length ? activePlans.map(plan => ({ id: plan.id, name: plan.name, price: Number(plan.price) })) : [blankPlan()])
+    setPlans(activePlans.length ? activePlans.map(plan => ({ clientKey: crypto.randomUUID(), id: plan.id, name: plan.name, price: Number(plan.price) })) : [blankPlan()])
     setThumbnailFile(null)
     setThumbnailPreview(event.banner_image_url || '')
     reset({
@@ -148,15 +151,26 @@ export default function AdminEvents() {
 
       if (data.pricing_type === 'paid') {
         const planRows = validPlans.map((plan, index) => ({
-          ...(plan.id ? { id: plan.id } : {}),
+          id: plan.id,
           event_id: eventId,
           name: plan.name,
           price: plan.price,
           is_active: true,
           display_order: index,
         }))
-        const { error: plansError } = await supabase.from('event_plans').upsert(planRows)
-        if (plansError) throw plansError
+        const existingPlanRows = planRows.filter(plan => plan.id).map(plan => ({ ...plan, id: plan.id! }))
+        const newPlanRows = planRows.filter(plan => !plan.id).map(({ id: _id, ...plan }) => plan)
+
+        // Keep inserts separate from updates. In a mixed upsert, PostgREST fills
+        // the missing IDs on new rows with null, which violates the UUID PK.
+        if (existingPlanRows.length) {
+          const { error: existingPlansError } = await supabase.from('event_plans').upsert(existingPlanRows)
+          if (existingPlansError) throw existingPlansError
+        }
+        if (newPlanRows.length) {
+          const { error: newPlansError } = await supabase.from('event_plans').insert(newPlanRows)
+          if (newPlansError) throw newPlansError
+        }
       }
 
       toast.success(editing ? 'Event updated.' : 'Event created.')
@@ -182,6 +196,21 @@ export default function AdminEvents() {
       : plan))
   }
   const removePlan = (index: number) => setPlans(current => current.filter((_, planIndex) => planIndex !== index))
+  const movePlan = (planKey: string, targetIndex: number) => {
+    setPlans(current => {
+      const sourceIndex = current.findIndex(plan => plan.clientKey === planKey)
+      if (sourceIndex < 0 || sourceIndex === targetIndex) return current
+      const reordered = [...current]
+      const [moved] = reordered.splice(sourceIndex, 1)
+      reordered.splice(targetIndex, 0, moved)
+      return reordered
+    })
+  }
+  const movePlanByKeyboard = (index: number, direction: -1 | 1) => {
+    const targetIndex = index + direction
+    if (targetIndex < 0 || targetIndex >= plans.length) return
+    movePlan(plans[index].clientKey, targetIndex)
+  }
   const nameToSlug = (name: string) => name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
 
   return (
@@ -286,11 +315,29 @@ export default function AdminEvents() {
 
                 <fieldset disabled={pricingType === 'free'} className={pricingType === 'free' ? 'opacity-50' : ''}>
                   <div className="flex items-center justify-between mb-2">
-                    <div><legend className="label mb-0">Paid plans *</legend><p className="text-xs text-temple-muted">Add one or more ticket or participation plans.</p></div>
+                    <div><legend className="label mb-0">Paid plans *</legend><p className="text-xs text-temple-muted">Add plans, then drag the handle to set their display order.</p></div>
                     <button type="button" disabled={pricingType === 'free'} onClick={() => setPlans(current => [...current, blankPlan()])} className="btn-secondary text-xs"><Plus size={13} /> Add Plan</button>
                   </div>
                   <div className="space-y-3">
-                    {plans.map((plan, index) => <div key={plan.id || index} className="grid grid-cols-[1fr_150px_auto] gap-2 items-end">
+                    {plans.map((plan, index) => <div
+                      key={plan.clientKey}
+                      onDragEnter={event => { event.preventDefault(); if (draggingPlanKey) movePlan(draggingPlanKey, index) }}
+                      onDragOver={event => event.preventDefault()}
+                      className={`grid grid-cols-[auto_minmax(0,1fr)_100px_auto] sm:grid-cols-[auto_minmax(0,1fr)_150px_auto] gap-2 items-end rounded-xl transition-colors ${draggingPlanKey === plan.clientKey ? 'bg-cream-100 ring-1 ring-saffron-300' : ''}`}
+                    >
+                      <button
+                        type="button"
+                        draggable
+                        onDragStart={event => { event.dataTransfer.effectAllowed = 'move'; event.dataTransfer.setData('text/plain', plan.clientKey); setDraggingPlanKey(plan.clientKey) }}
+                        onDragEnd={() => setDraggingPlanKey(null)}
+                        onKeyDown={event => {
+                          if (event.key === 'ArrowUp') { event.preventDefault(); movePlanByKeyboard(index, -1) }
+                          if (event.key === 'ArrowDown') { event.preventDefault(); movePlanByKeyboard(index, 1) }
+                        }}
+                        className="mb-1 p-2.5 rounded-xl text-temple-muted hover:text-vermilion-700 hover:bg-cream-100 cursor-grab active:cursor-grabbing focus:outline-none focus:ring-2 focus:ring-vermilion-300"
+                        aria-label={`Reorder ${plan.name || `plan ${index + 1}`}. Use arrow keys or drag.`}
+                        title="Drag to reorder"
+                      ><GripVertical size={18} /></button>
                       <div><label className="label">Plan name</label><input value={plan.name} onChange={event => updatePlan(index, 'name', event.target.value)} className="input-field" placeholder="e.g. Individual Pass" /></div>
                       <div><label className="label">Price</label><div className="relative"><IndianRupee size={14} className="absolute left-3 top-3.5 text-temple-muted" /><input value={plan.price} onChange={event => updatePlan(index, 'price', event.target.value)} type="number" min="1" step="0.01" className="input-field pl-8" placeholder="500" /></div></div>
                       <button type="button" onClick={() => removePlan(index)} disabled={plans.length === 1} className="mb-1 p-2.5 rounded-xl text-red-600 hover:bg-red-50 disabled:opacity-30" aria-label="Remove plan"><Trash2 size={17} /></button>

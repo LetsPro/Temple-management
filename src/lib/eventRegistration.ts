@@ -6,6 +6,13 @@ import type { Database } from './database.types'
 type Event = Database['public']['Tables']['events']['Row']
 type EventPlan = Database['public']['Tables']['event_plans']['Row']
 
+async function sendFreeEventConfirmation(registrationId: string) {
+  const { error } = await supabase.functions.invoke('send-confirmation-email', {
+    body: { confirmation_type: 'event', reference_id: registrationId },
+  })
+  if (error) console.error('Event confirmation email could not be sent:', error.message)
+}
+
 export async function registerForEvent(input: {
   event: Event
   plan?: EventPlan
@@ -28,7 +35,10 @@ export async function registerForEvent(input: {
       p_guest_mobile: guest!.mobile.trim(),
     })
     if (error || !registrationId) throw error || new Error('Could not create event registration.')
-    if (event.pricing_type === 'free') return registrationId as string
+    if (event.pricing_type === 'free') {
+      await sendFreeEventConfirmation(registrationId as string)
+      return registrationId as string
+    }
 
     await payWithRazorpay({
       paymentType: 'event',
@@ -59,6 +69,7 @@ export async function registerForEvent(input: {
         status: 'registered',
       }).eq('id', existing.id)
       if (error) throw error
+      await sendFreeEventConfirmation(existing.id)
       return existing.id
     }
     const { data: registration, error } = await supabase.from('event_registrations').insert({
@@ -71,6 +82,7 @@ export async function registerForEvent(input: {
       status: 'registered',
     }).select('id').single()
     if (error || !registration) throw error || new Error('Could not create event registration.')
+    await sendFreeEventConfirmation(registration.id)
     return registration.id
   }
 

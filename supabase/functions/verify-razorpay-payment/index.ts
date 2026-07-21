@@ -1,5 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts"
 import { createClient } from "npm:@supabase/supabase-js@2"
+import { sendConfirmationEmail, type ConfirmationType } from "../_shared/confirmation-email.ts"
 
 const cors = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "authorization, apikey, content-type, x-client-info" }
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { ...cors, "Content-Type": "application/json" } })
@@ -23,6 +24,7 @@ Deno.serve(async (req: Request) => {
 
     const paidAt = new Date().toISOString()
     await admin.from('payments').update({ razorpay_payment_id, razorpay_signature, payment_status: 'paid', paid_at: paidAt }).eq('id', payment.id)
+    let bookingNumber: string | undefined
     if (payment_type === 'donation') {
       await admin.from('donations').update({ payment_status: 'paid' }).eq('id', reference_id)
     } else if (payment_type === 'membership') {
@@ -34,9 +36,21 @@ Deno.serve(async (req: Request) => {
       await admin.from('event_registrations').update({ payment_status: 'paid', status: 'registered', amount: payment.amount }).eq('id', reference_id)
     } else {
       const { data: booking } = await admin.from('bookings').update({ payment_status: 'paid', booking_status: 'confirmed' }).eq('id', reference_id).select('booking_number').single()
-      return json({ verified: true, booking_number: booking?.booking_number })
+      bookingNumber = booking?.booking_number
     }
-    return json({ verified: true })
+
+    let emailSent = false
+    if (payment_type !== 'donation') {
+      try {
+        const email = await sendConfirmationEmail(admin, payment_type as ConfirmationType, reference_id)
+        emailSent = email.sent || email.alreadySent
+      } catch (emailError) {
+        // A captured payment must remain successful even if the email provider is
+        // temporarily unavailable. Failed sends are recorded for safe retry.
+        console.error('Confirmation email failed', emailError)
+      }
+    }
+    return json({ verified: true, booking_number: bookingNumber, email_sent: emailSent })
   } catch (error) {
     return json({ error: (error as Error).message }, 500)
   }
