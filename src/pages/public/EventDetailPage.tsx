@@ -7,6 +7,8 @@ import { format } from 'date-fns'
 import { useAuth } from '../../contexts/AuthContext'
 import { registerForEvent } from '../../lib/eventRegistration'
 import toast from 'react-hot-toast'
+import { PurchaseConfirmationModal } from '../../components/purchases/PurchaseConfirmation'
+import type { PurchaseConfirmationData } from '../../lib/confirmationPdf'
 
 type EventPlan = Database['public']['Tables']['event_plans']['Row']
 type Event = Database['public']['Tables']['events']['Row'] & { event_plans: EventPlan[] }
@@ -21,6 +23,7 @@ export default function EventDetailPage() {
   const [registrationLoading, setRegistrationLoading] = useState(false)
   const [selectedPlanId, setSelectedPlanId] = useState('')
   const [guest, setGuest] = useState({ name: '', email: '', mobile: '' })
+  const [confirmation, setConfirmation] = useState<PurchaseConfirmationData | null>(null)
 
   useEffect(() => {
     async function load() {
@@ -56,8 +59,24 @@ export default function EventDetailPage() {
     const selectedPlan = event.event_plans.find(plan => plan.id === selectedPlanId)
     setRegistrationLoading(true)
     try {
-      await registerForEvent({ event, plan: selectedPlan, user, profile, guest })
+      const result = await registerForEvent({ event, plan: selectedPlan, user, profile, guest })
       setRegistered(true)
+      setConfirmation({
+        kind: 'event',
+        reference: `EVT-${result.registrationId.slice(0, 8).toUpperCase()}`,
+        title: 'Your place is confirmed',
+        subtitle: `Your registration for ${event.title} is confirmed. Please keep this ticket for entry.`,
+        amount: event.pricing_type === 'paid' ? Number(selectedPlan?.price || 0) : undefined,
+        email: user ? (profile?.email || user.email || '') : guest.email,
+        emailSent: result.emailSent,
+        details: [
+          { label: 'Event', value: event.title },
+          ...(selectedPlan ? [{ label: 'Pass / Plan', value: selectedPlan.name }] : []),
+          { label: 'Date & time', value: format(new Date(event.start_datetime), 'dd MMMM yyyy, h:mm a') },
+          { label: 'Venue', value: event.venue },
+          { label: 'Entry', value: event.pricing_type === 'free' ? 'Free' : 'Paid' },
+        ],
+      })
       toast.success(event.pricing_type === 'paid' ? 'Payment verified and registration confirmed! 🙏' : 'Successfully registered! 🙏')
     } catch (error) {
       toast.error((error as Error).message || 'Registration failed. Please try again.')
@@ -87,6 +106,7 @@ export default function EventDetailPage() {
 
   return (
     <div className="page-container py-10">
+      {confirmation && <PurchaseConfirmationModal data={confirmation} onClose={() => setConfirmation(null)} doneLabel="Close" />}
       <Link to="/events" className="inline-flex items-center gap-1.5 text-temple-muted hover:text-temple-text text-sm mb-6 group">
         <ArrowLeft size={16} className="group-hover:-translate-x-0.5 transition-transform" />
         Back to Events

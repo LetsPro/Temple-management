@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "npm:@supabase/supabase-js@2"
 
-export type ConfirmationType = 'booking' | 'membership' | 'event'
+export type ConfirmationType = 'booking' | 'membership' | 'event' | 'donation'
 
 type EmailRow = { label: string; value: string }
 type ConfirmationContent = {
@@ -25,6 +25,7 @@ type TempleSettings = {
   address?: string | null
   phone?: string | null
   email?: string | null
+  receipt_footer_note?: string | null
 }
 
 const IST_TIME_ZONE = 'Asia/Kolkata'
@@ -223,9 +224,45 @@ async function buildEventContent(admin: SupabaseClient, referenceId: string): Pr
   }
 }
 
+async function buildDonationContent(admin: SupabaseClient, referenceId: string): Promise<ConfirmationContent> {
+  const { data, error } = await admin
+    .from('donations')
+    .select('donation_number,devotee_id,donor_name,donor_email,purpose,custom_purpose,amount,is_anonymous,payment_status,created_at')
+    .eq('id', referenceId)
+    .single()
+  if (error || !data) throw new Error('Donation details were not found.')
+
+  const donation = asRecord(data)
+  if (donation.payment_status !== 'paid') throw new Error('The donation is not confirmed yet.')
+  const profile = await getProfile(admin, donation.devotee_id)
+  const recipient = textValue(profile.email || donation.donor_email).trim()
+  if (!recipient) throw new Error('No recipient email is available for this donation.')
+  const donationNumber = textValue(donation.donation_number, `DON-${referenceId.slice(0, 8).toUpperCase()}`)
+  const purpose = textValue(donation.custom_purpose || donation.purpose, 'General Donation')
+
+  return {
+    recipient,
+    devoteeName: textValue(donation.donor_name || profile.full_name, 'Devotee'),
+    subject: `Donation received with gratitude · ${donationNumber}`,
+    eyebrow: 'Donation Confirmation Ticket',
+    heading: 'Thank you for your sacred offering',
+    intro: 'Your donation has been received successfully. We are grateful for your support of the Trust and its sacred service.',
+    referenceLabel: 'Donation number',
+    referenceValue: donationNumber,
+    rows: [
+      { label: 'Donation purpose', value: purpose },
+      { label: 'Donor', value: textValue(donation.donor_name, 'Devotee') },
+      { label: 'Donation date', value: formatDate(donation.created_at, true) },
+      { label: 'Amount paid', value: formatCurrency(donation.amount) },
+      { label: 'Payment status', value: 'Paid' },
+    ],
+  }
+}
+
 async function buildContent(admin: SupabaseClient, type: ConfirmationType, referenceId: string) {
   if (type === 'booking') return buildBookingContent(admin, referenceId)
   if (type === 'membership') return buildMembershipContent(admin, referenceId)
+  if (type === 'donation') return buildDonationContent(admin, referenceId)
   return buildEventContent(admin, referenceId)
 }
 
@@ -276,6 +313,7 @@ function renderHtml(content: ConfirmationContent, settings: TempleSettings, site
         <tr><td style="padding:22px 30px;text-align:center;background:#fff8ed;border-top:1px solid #eadbc9;color:#765e50;font-size:12px;line-height:1.6;">
           ${settings.address ? `<div>${escapeHtml(settings.address)}</div>` : ''}
           ${contact ? `<div>${escapeHtml(contact)}</div>` : ''}
+          ${settings.receipt_footer_note ? `<div style="margin-top:8px;">${escapeHtml(settings.receipt_footer_note)}</div>` : ''}
           <div style="margin-top:8px;color:#9d1515;">This is an automated confirmation for your temple transaction.</div>
         </td></tr>
       </table>
@@ -296,7 +334,7 @@ function renderText(content: ConfirmationContent, settings: TempleSettings) {
   ]
   if (content.listItems?.length) lines.push('', `${content.listTitle || 'Details'}:`, ...content.listItems.map(item => `- ${item}`))
   if (content.note) lines.push('', `Please note: ${content.note}`)
-  lines.push('', 'May the Divine Mother bless you and your family.', '', textValue(settings.address), textValue(settings.phone), textValue(settings.email))
+  lines.push('', 'May the Divine Mother bless you and your family.', '', textValue(settings.receipt_footer_note), textValue(settings.address), textValue(settings.phone), textValue(settings.email))
   return lines.filter((line, index) => line || lines[index - 1] !== '').join('\n').trim()
 }
 
@@ -339,7 +377,7 @@ export async function sendConfirmationEmail(admin: SupabaseClient, type: Confirm
   const from = Deno.env.get('RESEND_FROM_EMAIL')
   if (!resendApiKey || !from) throw new Error('Confirmation email service is not configured.')
 
-  const { data: rawSettings } = await admin.from('temple_settings').select('temple_name,tagline,logo_url,address,phone,email').limit(1).maybeSingle()
+  const { data: rawSettings } = await admin.from('temple_settings').select('temple_name,tagline,logo_url,address,phone,email,receipt_footer_note').limit(1).maybeSingle()
   const settings = asRecord(rawSettings) as TempleSettings
   const content = await buildContent(admin, type, referenceId)
   const delivery = await markDelivery(admin, type, referenceId, content.recipient)

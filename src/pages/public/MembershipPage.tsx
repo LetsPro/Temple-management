@@ -5,6 +5,8 @@ import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import { payWithRazorpay } from '../../lib/razorpay'
 import toast from 'react-hot-toast'
+import { PurchaseConfirmationModal } from '../../components/purchases/PurchaseConfirmation'
+import type { PurchaseConfirmationData } from '../../lib/confirmationPdf'
 
 type Plan = { id: string; name: string; amount: number; duration_months: number; benefits: string[] }
 const fallbackPlans: Plan[] = [
@@ -24,6 +26,7 @@ export default function MembershipPage() {
   const [termsAccepted, setTermsAccepted] = useState(false)
   const [login, setLogin] = useState({ email: '', password: '' })
   const [form, setForm] = useState({ full_name: '', spouse_name: '', date_of_birth: '', rashi: '', nakshatra: '', address: '', mobile: '' })
+  const [confirmation, setConfirmation] = useState<PurchaseConfirmationData | null>(null)
 
   useEffect(() => {
     supabase.from('membership_plans').select('id,name,amount,duration_months,benefits').eq('is_active', true).order('display_order').then(({ data }) => {
@@ -79,7 +82,24 @@ export default function MembershipPage() {
       }
       const { data: membership, error } = await supabase.from('memberships').insert({ devotee_id: user.id, plan_id: activePlan.id, ...membershipDetails, status: 'pending', payment_status: 'pending', starts_at: null, expires_at: null }).select('id,membership_number').single()
       if (error || !membership) throw new Error(error?.message || 'Could not create membership application.')
-      await payWithRazorpay({ paymentType: 'membership', referenceId: membership.id, title: 'Shri Tripura Sundari Lalithambe Trust', description: `${activePlan.name} Membership`, prefill: { name: form.full_name, email: profile?.email, contact: form.mobile } })
+      const payment = await payWithRazorpay({ paymentType: 'membership', referenceId: membership.id, title: 'Shri Tripura Sundari Lalithambe Trust', description: `${activePlan.name} Membership`, prefill: { name: form.full_name, email: profile?.email, contact: form.mobile } })
+      const validUntil = new Date()
+      validUntil.setMonth(validUntil.getMonth() + activePlan.duration_months)
+      setConfirmation({
+        kind: 'membership',
+        reference: membership.membership_number,
+        title: 'Welcome to our temple family',
+        subtitle: `Your ${activePlan.name} membership is active and ready to use.`,
+        amount: activePlan.amount,
+        email: profile?.email || user.email || '',
+        emailSent: payment.email_sent,
+        details: [
+          { label: 'Membership plan', value: activePlan.name },
+          { label: 'Member name', value: form.full_name.trim() },
+          { label: 'Duration', value: `${activePlan.duration_months} months` },
+          { label: 'Valid until', value: validUntil.toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' }) },
+        ],
+      })
       toast.success(`Membership ${membership.membership_number} is now active.`)
       setActivePlan(null)
     } catch (error) { toast.error((error as Error).message) } finally { setSubmitting(false) }
@@ -91,6 +111,7 @@ export default function MembershipPage() {
       <div className="section-heading centered-heading"><span>Choose your membership</span><h2>Membership plans</h2><p>Benefits and fees are based on the supplied Trust membership form.</p></div>
       <div className="membership-plans">{plans.map((plan, index) => <article key={plan.id} className="membership-plan-card">{index === 0 && <em>Most complete</em>}<Crown /><h3>{plan.name}</h3><strong>₹{plan.amount.toLocaleString('en-IN')}</strong><span>{plan.duration_months === 12 ? '1 year' : `${plan.duration_months} months`}</span><ul>{plan.benefits.map(benefit => <li key={benefit}><Check />{benefit}</li>)}</ul><button type="button" disabled={!plansReady} onClick={() => { setActivePlan(plan); setTermsAccepted(false) }} className="btn-primary membership-join">{plansReady ? 'Join' : 'Temporarily unavailable'}</button></article>)}</div>
     </section>
+    {confirmation && <PurchaseConfirmationModal data={confirmation} onClose={() => setConfirmation(null)} doneLabel="Close" />}
     {activePlan && <div className="payment-modal" role="dialog" aria-modal="true" aria-labelledby="membership-modal-title" onMouseDown={event => event.target === event.currentTarget && setActivePlan(null)}>
       <div className="payment-modal-card membership-join-modal">
         <div className="modal-header"><div><span>{user ? 'Membership application' : 'Member login'}</span><h2 id="membership-modal-title">{activePlan.name}</h2></div><button onClick={() => setActivePlan(null)} aria-label="Close membership"><X /></button></div>

@@ -7,6 +7,8 @@ import { payWithRazorpay } from '../../lib/razorpay'
 import { format, addDays, isBefore, startOfDay } from 'date-fns'
 import type { Database } from '../../lib/database.types'
 import toast from 'react-hot-toast'
+import { PurchaseConfirmation } from '../../components/purchases/PurchaseConfirmation'
+import type { PurchaseConfirmationData } from '../../lib/confirmationPdf'
 
 type Service = Database['public']['Tables']['pooja_services']['Row']
 type Slot = Database['public']['Tables']['pooja_service_slots']['Row']
@@ -32,7 +34,7 @@ export default function BookingFlow() {
   const [specialNotes, setSpecialNotes] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [termsAccepted, setTermsAccepted] = useState(false)
-  const [bookingResult, setBookingResult] = useState<{ booking_number: string } | null>(null)
+  const [bookingResult, setBookingResult] = useState<PurchaseConfirmationData | null>(null)
   const [blockedDates, setBlockedDates] = useState<string[]>([])
   const [guest, setGuest] = useState({ name: profile?.full_name || '', email: profile?.email || '', mobile: profile?.mobile || '' })
 
@@ -177,7 +179,22 @@ export default function BookingFlow() {
 
       const payer = user && profile ? { name: profile.full_name, email: profile.email, mobile: profile.mobile } : guest
       const payment = await payWithRazorpay({ paymentType: 'booking', referenceId: bookingId, title: 'Shri Tripura Sundari Lalithambe Trust', description: selectedService.name, prefill: { name: payer.name, email: payer.email, contact: payer.mobile } })
-      setBookingResult({ booking_number: payment.booking_number || bookingNumber || bookingId.slice(0, 8).toUpperCase() })
+      setBookingResult({
+        kind: 'booking',
+        reference: payment.booking_number || bookingNumber || bookingId.slice(0, 8).toUpperCase(),
+        title: `${selectedService.name} confirmed`,
+        subtitle: 'Your sacred Pooja / Seva booking is confirmed. Please keep this ticket for your visit.',
+        amount: Number(selectedService.price),
+        email: payer.email,
+        emailSent: payment.email_sent,
+        details: [
+          { label: 'Pooja / Seva', value: selectedService.name },
+          { label: 'Date', value: format(new Date(`${selectedDate}T00:00:00`), 'dd MMMM yyyy') },
+          { label: 'Time', value: selectedSlot.slot_time },
+          { label: 'Participants', value: String(participantCount) },
+          ...(specialNotes.trim() ? [{ label: 'Special request', value: specialNotes.trim() }] : []),
+        ],
+      })
       setStep('success')
     } catch (err: unknown) {
       const e = err as Error
@@ -196,35 +213,7 @@ export default function BookingFlow() {
   const currentStepIdx = stepsOrder.indexOf(step)
 
   if (step === 'success' && bookingResult) {
-    return (
-      <div className="max-w-md mx-auto py-10 text-center animate-fade-in">
-        <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-4">
-          <CheckCircle size={32} className="text-green-600" />
-        </div>
-        <h2 className="text-2xl font-bold text-temple-text mb-2">Booking Confirmed! 🙏</h2>
-        <p className="text-temple-muted mb-6 leading-relaxed">
-          Your booking has been confirmed. We look forward to your divine visit.
-        </p>
-        <div className="card text-left mb-6">
-          <div className="text-center border-b border-temple-border pb-4 mb-4">
-            <div className="text-2xl">🛕</div>
-            <div className="font-bold text-temple-text">Shri Tripura Sundari Lalithambe Trust</div>
-            <div className="text-xs text-temple-muted">Booking Confirmation</div>
-          </div>
-          <div className="space-y-2 text-sm">
-            <div className="flex justify-between"><span className="text-temple-muted">Booking No.</span><span className="font-bold text-vermilion-700">{bookingResult.booking_number}</span></div>
-            <div className="flex justify-between"><span className="text-temple-muted">Service</span><span className="font-semibold">{selectedService?.name}</span></div>
-            <div className="flex justify-between"><span className="text-temple-muted">Date</span><span className="font-semibold">{selectedDate && format(new Date(selectedDate), 'dd MMMM yyyy')}</span></div>
-            <div className="flex justify-between"><span className="text-temple-muted">Time</span><span className="font-semibold">{selectedSlot?.slot_time}</span></div>
-            <div className="flex justify-between"><span className="text-temple-muted">Amount</span><span className="font-bold">₹{selectedService?.price.toLocaleString('en-IN')}</span></div>
-          </div>
-        </div>
-        <div className="flex gap-3 justify-center">
-          <button onClick={() => window.print()} className="btn-secondary text-sm">Print Receipt</button>
-          <button onClick={() => navigate(user ? '/portal/bookings' : '/poojas')} className="btn-primary text-sm">{user ? 'View Bookings' : 'Back to Sevas'}</button>
-        </div>
-      </div>
-    )
+    return <div className="py-8 animate-fade-in"><PurchaseConfirmation data={bookingResult} onDone={() => navigate(user ? '/portal/bookings' : '/poojas')} doneLabel={user ? 'View Bookings' : 'Back to Sevas'} /></div>
   }
 
   return (

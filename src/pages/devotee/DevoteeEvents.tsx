@@ -9,6 +9,8 @@ import type { Database } from '../../lib/database.types'
 import EmptyState from '../../components/ui/EmptyState'
 import { Skeleton } from '../../components/ui/Skeleton'
 import toast from 'react-hot-toast'
+import { PurchaseConfirmationModal } from '../../components/purchases/PurchaseConfirmation'
+import type { PurchaseConfirmationData } from '../../lib/confirmationPdf'
 
 type EventPlan = Database['public']['Tables']['event_plans']['Row']
 type EventRegistration = Pick<Database['public']['Tables']['event_registrations']['Row'], 'id' | 'status' | 'payment_status' | 'event_plan_id'>
@@ -23,6 +25,7 @@ export default function DevoteeEvents() {
   const [loading, setLoading] = useState(true)
   const [registering, setRegistering] = useState<string | null>(null)
   const [selectedPlans, setSelectedPlans] = useState<Record<string, string>>({})
+  const [confirmation, setConfirmation] = useState<PurchaseConfirmationData | null>(null)
 
   const load = async () => {
     if (!user) return
@@ -56,7 +59,23 @@ export default function DevoteeEvents() {
     const plan = event.event_plans.find(item => item.id === selectedPlans[event.id])
     setRegistering(event.id)
     try {
-      await registerForEvent({ event, plan, user, profile })
+      const result = await registerForEvent({ event, plan, user, profile })
+      setConfirmation({
+        kind: 'event',
+        reference: `EVT-${result.registrationId.slice(0, 8).toUpperCase()}`,
+        title: 'Your place is confirmed',
+        subtitle: `Your registration for ${event.title} is confirmed. Please keep this ticket for entry.`,
+        amount: event.pricing_type === 'paid' ? Number(plan?.price || 0) : undefined,
+        email: profile?.email || user.email || '',
+        emailSent: result.emailSent,
+        details: [
+          { label: 'Event', value: event.title },
+          ...(plan ? [{ label: 'Pass / Plan', value: plan.name }] : []),
+          { label: 'Date & time', value: format(new Date(event.start_datetime), 'dd MMMM yyyy, h:mm a') },
+          { label: 'Venue', value: event.venue },
+          { label: 'Entry', value: event.pricing_type === 'free' ? 'Free' : 'Paid' },
+        ],
+      })
       toast.success(event.pricing_type === 'paid' ? 'Payment verified and registration confirmed! 🙏' : 'Registered successfully! 🙏')
       await load()
     } catch (error) {
@@ -81,6 +100,7 @@ export default function DevoteeEvents() {
 
   return (
     <div className="space-y-6 animate-fade-in">
+      {confirmation && <PurchaseConfirmationModal data={confirmation} onClose={() => setConfirmation(null)} doneLabel="Close" />}
       <div>
         <h1 className="text-2xl font-bold text-temple-text">Festivals & Events</h1>
         <p className="text-temple-muted text-sm">Register for upcoming events and manage your registrations.</p>

@@ -271,6 +271,45 @@
 
 .payment-modal { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; padding: 20px; background: rgba(37, 14, 7, .68); backdrop-filter: blur(5px); }
 .payment-modal-card { width: min(720px, 100%); max-height: calc(100vh - 40px); overflow: auto; border-radius: 26px; background: #fffdf9; box-shadow: 0 25px 80px rgba(45, 12, 5, .3); }
+.purchase-confirmation { width: min(620px, 100%); margin: 0 auto; padding: 24px; }
+.purchase-ticket { position: relative; overflow: hidden; border: 1px solid #ead5bb; border-radius: 24px; background: #fffdf9; box-shadow: 0 18px 45px rgba(92, 51, 31, .12); }
+.purchase-ticket::before, .purchase-ticket::after { content: ''; position: absolute; z-index: 2; top: 166px; width: 24px; height: 24px; border-radius: 999px; background: #f6eee4; border: 1px solid #ead5bb; }
+.purchase-ticket::before { left: -13px; }.purchase-ticket::after { right: -13px; }
+.purchase-ticket-head { display: flex; flex-direction: column; align-items: center; padding: 23px 24px 21px; color: white; text-align: center; background: linear-gradient(135deg, #80090e, #b3171d); border-bottom: 5px solid #dfa339; }
+.purchase-ticket-head strong { max-width: 480px; font-family: Georgia, serif; font-size: 21px; line-height: 1.25; }
+.purchase-ticket-head span { margin-top: 4px; color: #ffdda0; font-size: 11px; }
+.purchase-ticket-mark { color: #ffd275; font-family: Georgia, serif; font-size: 28px; line-height: 1; margin-bottom: 5px; }
+.purchase-ticket-body { padding: 28px 34px 25px; text-align: center; }
+.purchase-confirmed { display: inline-flex; align-items: center; gap: 6px; padding: 6px 11px; border-radius: 999px; color: #20703a; background: #edf8ef; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; }
+.purchase-confirmed svg { width: 15px; height: 15px; }
+.purchase-eyebrow { margin: 18px 0 4px !important; color: #d15b0f !important; font-size: 10px !important; font-weight: 800; text-transform: uppercase; letter-spacing: .14em; }
+.purchase-ticket-body h2 { color: #8f1315; font-family: Georgia, serif; font-size: 29px; line-height: 1.15; }
+.purchase-ticket-body > p { margin-top: 7px; color: #765e50; font-size: 14px; line-height: 1.6; }
+.purchase-reference { margin: 22px 0 12px; padding: 16px; border: 1px dashed #d7a552; border-radius: 14px; background: linear-gradient(135deg, #fff9ed, #fff0d2); }
+.purchase-reference small { display: block; color: #826658; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .12em; }
+.purchase-reference strong { display: block; margin-top: 4px; color: #971417; font-size: 21px; letter-spacing: .04em; }
+.purchase-ticket dl { margin: 0; }
+.purchase-ticket dl div { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); gap: 18px; padding: 10px 0; border-bottom: 1px solid #f0e2d4; font-size: 13px; text-align: left; }
+.purchase-ticket dt { color: #765e50; }.purchase-ticket dd { margin: 0; color: #3c2415; font-weight: 700; text-align: right; overflow-wrap: anywhere; }
+.purchase-total { display: flex; align-items: center; justify-content: space-between; margin-top: 16px; padding: 13px 16px; border-radius: 12px; background: #fff1d4; color: #765e50; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; }
+.purchase-total strong { color: #971417; font-size: 19px; letter-spacing: 0; }
+.purchase-email-status { display: flex; align-items: flex-start; gap: 8px; margin-top: 17px; padding: 11px 13px; border-radius: 10px; color: #765e50; background: #f8f3ed; font-size: 12px; line-height: 1.45; text-align: left; }
+.purchase-email-status.sent { color: #20703a; background: #edf8ef; }.purchase-email-status svg { flex: 0 0 16px; width: 16px; margin-top: 1px; }
+.purchase-blessing { margin-top: 19px !important; color: #8f1315 !important; font-family: Georgia, serif; font-size: 16px !important; }
+.purchase-ticket-foot { display: flex; flex-direction: column; gap: 3px; padding: 15px 25px; border-top: 1px solid #eadbc9; color: #765e50; background: #fff8ed; font-size: 10px; line-height: 1.45; text-align: center; }
+.purchase-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; padding-top: 19px; }
+.purchase-actions button { justify-content: center; }.purchase-confirmation-modal .payment-modal-card { position: relative; width: min(680px, 100%); background: #f6eee4; }
+.purchase-close { position: absolute; z-index: 5; top: 12px; right: 12px; display: grid; width: 34px; height: 34px; place-items: center; border-radius: 999px; color: white; background: rgba(63, 12, 10, .58); }
+.purchase-close svg { width: 18px; }
+
+@media (max-width: 640px) {
+  .purchase-confirmation { padding: 13px; }
+  .purchase-ticket-body { padding: 24px 20px 21px; }
+  .purchase-ticket-body h2 { font-size: 24px; }
+  .purchase-ticket dl div { gap: 10px; }
+  .purchase-actions { display: grid; grid-template-columns: 1fr 1fr; }
+  .purchase-actions .btn-primary { grid-column: 1 / -1; }
+}
 .modal-header, .modal-footer { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 20px 24px; }
 .modal-header { color: white; background: linear-gradient(120deg, #8c0d13, #bf3612); }
 .modal-header span, .eyebrow { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .18em; color: #ffd27e; }
@@ -485,6 +524,11 @@
 
 /* Print styles for receipts */
 @media print {
+  body:has(.purchase-confirmation) * { visibility: hidden !important; }
+  body:has(.purchase-confirmation) .purchase-confirmation,
+  body:has(.purchase-confirmation) .purchase-confirmation * { visibility: visible !important; }
+  body:has(.purchase-confirmation) .purchase-confirmation { position: absolute; inset: 0 auto auto 0; width: 100%; max-width: none; padding: 0; }
+  body:has(.purchase-confirmation) .purchase-ticket { box-shadow: none; }
   .no-print { display: none !important; }
   .print-only { display: block !important; }
   body { background: white; }

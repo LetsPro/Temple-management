@@ -45,5 +45,5 @@ export async function payWithRazorpay(input: {
     body: { payment_type: input.paymentType, reference_id: input.referenceId, ...response },
   })
   if (verifyError || !verified?.verified) throw new Error(verified?.error || verifyError?.message || 'Payment verification failed.')
-  return { ...response, booking_number: verified.booking_number as string | undefined }
+  return { ...response, booking_number: verified.booking_number as string | undefined, email_sent: Boolean(verified.email_sent) }
 }

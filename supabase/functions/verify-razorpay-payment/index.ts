@@ -40,15 +40,13 @@ Deno.serve(async (req: Request) => {
     }
 
     let emailSent = false
-    if (payment_type !== 'donation') {
-      try {
-        const email = await sendConfirmationEmail(admin, payment_type as ConfirmationType, reference_id)
-        emailSent = email.sent || email.alreadySent
-      } catch (emailError) {
-        // A captured payment must remain successful even if the email provider is
-        // temporarily unavailable. Failed sends are recorded for safe retry.
-        console.error('Confirmation email failed', emailError)
-      }
+    try {
+      const email = await sendConfirmationEmail(admin, payment_type as ConfirmationType, reference_id)
+      emailSent = email.sent || email.alreadySent
+    } catch (emailError) {
+      // A captured payment must remain successful even if the email provider is
+      // temporarily unavailable or an anonymous donation has no email address.
+      console.error('Confirmation email failed', emailError)
     }
     return json({ verified: true, booking_number: bookingNumber, email_sent: emailSent })
   } catch (error) {

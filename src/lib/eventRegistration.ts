@@ -7,11 +7,14 @@ type Event = Database['public']['Tables']['events']['Row']
 type EventPlan = Database['public']['Tables']['event_plans']['Row']
 
 async function sendFreeEventConfirmation(registrationId: string) {
-  const { error } = await supabase.functions.invoke('send-confirmation-email', {
+  const { data, error } = await supabase.functions.invoke('send-confirmation-email', {
     body: { confirmation_type: 'event', reference_id: registrationId },
   })
   if (error) console.error('Event confirmation email could not be sent:', error.message)
+  return !error && Boolean(data?.sent || data?.already_sent)
 }
+
+export type EventRegistrationResult = { registrationId: string; emailSent: boolean }
 
 export async function registerForEvent(input: {
   event: Event
@@ -36,18 +39,18 @@ export async function registerForEvent(input: {
     })
     if (error || !registrationId) throw error || new Error('Could not create event registration.')
     if (event.pricing_type === 'free') {
-      await sendFreeEventConfirmation(registrationId as string)
-      return registrationId as string
+      const emailSent = await sendFreeEventConfirmation(registrationId as string)
+      return { registrationId: registrationId as string, emailSent } satisfies EventRegistrationResult
     }
 
-    await payWithRazorpay({
+    const payment = await payWithRazorpay({
       paymentType: 'event',
       referenceId: registrationId as string,
       title: 'Shri Tripura Sundari Lalithambe Trust',
       description: `${event.title} · ${plan!.name}`,
       prefill: { name: guest!.name, email: guest!.email, contact: guest!.mobile },
     })
-    return registrationId as string
+    return { registrationId: registrationId as string, emailSent: payment.email_sent } satisfies EventRegistrationResult
   }
 
   let existing: { id: string; status: string; payment_status: string } | null = null
@@ -69,8 +72,8 @@ export async function registerForEvent(input: {
         status: 'registered',
       }).eq('id', existing.id)
       if (error) throw error
-      await sendFreeEventConfirmation(existing.id)
-      return existing.id
+      const emailSent = await sendFreeEventConfirmation(existing.id)
+      return { registrationId: existing.id, emailSent } satisfies EventRegistrationResult
     }
     const { data: registration, error } = await supabase.from('event_registrations').insert({
       event_id: event.id,
@@ -82,12 +85,12 @@ export async function registerForEvent(input: {
       status: 'registered',
     }).select('id').single()
     if (error || !registration) throw error || new Error('Could not create event registration.')
-    await sendFreeEventConfirmation(registration.id)
-    return registration.id
+    const emailSent = await sendFreeEventConfirmation(registration.id)
+    return { registrationId: registration.id, emailSent } satisfies EventRegistrationResult
   }
 
   if (!plan) throw new Error('Select a plan to continue.')
-  if (existing?.status === 'registered' && existing.payment_status === 'paid') return existing.id
+  if (existing?.status === 'registered' && existing.payment_status === 'paid') return { registrationId: existing.id, emailSent: true } satisfies EventRegistrationResult
 
   let registrationId = existing?.id
   if (existing) {
@@ -113,7 +116,7 @@ export async function registerForEvent(input: {
   }
 
   if (!registrationId) throw new Error('Could not create event registration.')
-  await payWithRazorpay({
+  const payment = await payWithRazorpay({
     paymentType: 'event',
     referenceId: registrationId,
     title: 'Shri Tripura Sundari Lalithambe Trust',
@@ -124,5 +127,5 @@ export async function registerForEvent(input: {
       contact: user ? (profile?.mobile || '') : guest!.mobile,
     },
   })
-  return registrationId
+  return { registrationId, emailSent: payment.email_sent } satisfies EventRegistrationResult
 }
