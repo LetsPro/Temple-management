@@ -22,7 +22,7 @@ export default function MembershipPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [termsAccepted, setTermsAccepted] = useState(false)
   const [login, setLogin] = useState({ email: '', password: '' })
-  const [form, setForm] = useState({ full_name: '', spouse_name: '', date_of_birth: '', rashi: '', nakshatra: '', address: '', mobile: '', declaration_accepted: false })
+  const [form, setForm] = useState({ full_name: '', spouse_name: '', date_of_birth: '', rashi: '', nakshatra: '', address: '', mobile: '' })
 
   useEffect(() => {
     supabase.from('membership_plans').select('id,name,amount,duration_months,benefits').eq('is_active', true).order('display_order').then(({ data }) => {
@@ -39,7 +39,7 @@ export default function MembershipPage() {
     document.body.style.overflow = 'hidden'
     return () => { document.removeEventListener('keydown', close); document.body.style.overflow = '' }
   }, [activePlan])
-  const set = (key: keyof typeof form, value: string | boolean) => setForm(current => ({ ...current, [key]: value }))
+  const set = (key: keyof typeof form, value: string) => setForm(current => ({ ...current, [key]: value }))
 
   const loginToJoin = async (event: FormEvent) => {
     event.preventDefault()
@@ -54,13 +54,24 @@ export default function MembershipPage() {
   const join = async () => {
     if (!activePlan) return
     if (!user) return toast.error('Please sign in before applying for membership.')
-    if (!form.full_name || !form.date_of_birth || !form.address || form.mobile.replace(/\D/g, '').length < 10) return toast.error('Complete all required membership details.')
-    if (!form.declaration_accepted) return toast.error('Please accept the declaration.')
+    const missing: string[] = []
+    if (!form.full_name.trim()) missing.push('full name')
+    if (!form.date_of_birth) missing.push('date of birth')
+    if (!form.address.trim()) missing.push('address')
+    if (form.mobile.replace(/\D/g, '').length < 10) missing.push('valid mobile number')
+    if (missing.length) return toast.error(`Please enter: ${missing.join(', ')}.`)
     if (!termsAccepted) return toast.error('Please read and accept the Terms and Payment Terms.')
     if (activePlan.id === 'annual' || activePlan.id === 'half-yearly' || activePlan.id === 'quarterly') return toast.error('Membership plans must be activated in the database before payment.')
     setSubmitting(true)
     try {
-      const { data: membership, error } = await supabase.from('memberships').insert({ devotee_id: user.id, plan_id: activePlan.id, ...form, status: 'pending', payment_status: 'pending', starts_at: null, expires_at: null }).select('id,membership_number').single()
+      const membershipDetails = {
+        ...form,
+        full_name: form.full_name.trim(),
+        address: form.address.trim(),
+        mobile: form.mobile.trim(),
+        declaration_accepted: false,
+      }
+      const { data: membership, error } = await supabase.from('memberships').insert({ devotee_id: user.id, plan_id: activePlan.id, ...membershipDetails, status: 'pending', payment_status: 'pending', starts_at: null, expires_at: null }).select('id,membership_number').single()
       if (error || !membership) throw new Error(error?.message || 'Could not create membership application.')
       await payWithRazorpay({ paymentType: 'membership', referenceId: membership.id, title: 'Shri Tripura Sundari Lalithambe Trust', description: `${activePlan.name} Membership`, prefill: { name: form.full_name, email: profile?.email, contact: form.mobile } })
       toast.success(`Membership ${membership.membership_number} is now active.`)
@@ -95,7 +106,6 @@ export default function MembershipPage() {
             <Field label="Nakshatra" value={form.nakshatra} onChange={value => set('nakshatra', value)} />
             <label className="sm:col-span-2"><span className="label">Address *</span><textarea className="input-field" rows={3} value={form.address} onChange={event => set('address', event.target.value)} /></label>
           </div>
-          <label className="declaration"><input type="checkbox" checked={form.declaration_accepted} onChange={event => set('declaration_accepted', event.target.checked)} /><span>I declare that the information above is correct to the best of my knowledge.</span></label>
           <label className="checkout-consent"><input type="checkbox" checked={termsAccepted} onChange={event => setTermsAccepted(event.target.checked)} /><span>I have read and agree to the <a href="/terms" target="_blank" rel="noopener noreferrer">Terms</a> and <a href="/payment-terms" target="_blank" rel="noopener noreferrer">Payment Terms</a>.</span></label>
           <div className="secure-note"><ShieldCheck /><div><strong>Secure online payment</strong><small>Your subscription activates after payment verification.</small></div></div>
           <button onClick={join} disabled={submitting || !termsAccepted} className="btn-primary w-full py-3.5 text-base"><CreditCard /> {submitting ? 'Processing membership...' : `Continue · ₹${activePlan.amount.toLocaleString('en-IN')}`}</button>

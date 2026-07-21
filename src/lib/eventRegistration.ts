@@ -18,24 +18,37 @@ export async function registerForEvent(input: {
     throw new Error('Enter your name, email and valid mobile number to continue.')
   }
 
-  let existing: { id: string; status: string; payment_status: string } | null = null
-  if (user) {
-    const { data, error } = await supabase
-      .from('event_registrations')
-      .select('id,status,payment_status')
-      .eq('event_id', event.id)
-      .eq('devotee_id', user.id)
-      .maybeSingle()
-    if (error) throw error
-    existing = data
+  if (!user) {
+    if (event.pricing_type === 'paid' && !plan) throw new Error('Select a plan to continue.')
+    const { data: registrationId, error } = await supabase.rpc('create_guest_event_registration', {
+      p_event_id: event.id,
+      p_event_plan_id: plan?.id || null,
+      p_guest_name: guest!.name.trim(),
+      p_guest_email: guest!.email.trim(),
+      p_guest_mobile: guest!.mobile.trim(),
+    })
+    if (error || !registrationId) throw error || new Error('Could not create event registration.')
+    if (event.pricing_type === 'free') return registrationId as string
+
+    await payWithRazorpay({
+      paymentType: 'event',
+      referenceId: registrationId as string,
+      title: 'Shri Tripura Sundari Lalithambe Trust',
+      description: `${event.title} · ${plan!.name}`,
+      prefill: { name: guest!.name, email: guest!.email, contact: guest!.mobile },
+    })
+    return registrationId as string
   }
 
-  const registrant = {
-    devotee_id: user?.id || null,
-    guest_name: user ? '' : guest!.name.trim(),
-    guest_email: user ? '' : guest!.email.trim(),
-    guest_mobile: user ? '' : guest!.mobile.trim(),
-  }
+  let existing: { id: string; status: string; payment_status: string } | null = null
+  const { data, error: existingError } = await supabase
+    .from('event_registrations')
+    .select('id,status,payment_status')
+    .eq('event_id', event.id)
+    .eq('devotee_id', user.id)
+    .maybeSingle()
+  if (existingError) throw existingError
+  existing = data
 
   if (event.pricing_type === 'free') {
     if (existing) {
@@ -50,7 +63,7 @@ export async function registerForEvent(input: {
     }
     const { data: registration, error } = await supabase.from('event_registrations').insert({
       event_id: event.id,
-      ...registrant,
+      devotee_id: user.id,
       event_plan_id: null,
       participant_count: 1,
       amount: 0,
@@ -76,7 +89,7 @@ export async function registerForEvent(input: {
   } else {
     const { data: registration, error } = await supabase.from('event_registrations').insert({
       event_id: event.id,
-      ...registrant,
+      devotee_id: user.id,
       event_plan_id: plan.id,
       participant_count: 1,
       amount: Number(plan.price),

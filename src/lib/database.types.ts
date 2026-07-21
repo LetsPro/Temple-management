@@ -811,6 +811,16 @@ export interface Database {
     }
     Views: {}
     Functions: {
+      create_guest_event_registration: {
+        Args: {
+          p_event_id: string
+          p_event_plan_id: string | null
+          p_guest_name: string
+          p_guest_email: string
+          p_guest_mobile: string
+        }
+        Returns: string
+      }
       get_slot_bookings_count: {
         Args: { p_service_id: string; p_slot_id: string; p_booking_date: string }
         Returns: number
