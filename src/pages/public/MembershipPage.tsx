@@ -6,7 +6,7 @@ import { useAuth } from '../../contexts/AuthContext'
 import { payWithRazorpay } from '../../lib/razorpay'
 import toast from 'react-hot-toast'
 import { PurchaseConfirmationModal } from '../../components/purchases/PurchaseConfirmation'
-import type { PurchaseConfirmationData } from '../../lib/confirmationPdf'
+import type { PurchaseConfirmationData } from '../../lib/confirmationImage'
 
 type Plan = { id: string; name: string; amount: number; duration_months: number; benefits: string[] }
 const fallbackPlans: Plan[] = [

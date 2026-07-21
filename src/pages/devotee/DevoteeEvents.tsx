@@ -10,7 +10,7 @@ import EmptyState from '../../components/ui/EmptyState'
 import { Skeleton } from '../../components/ui/Skeleton'
 import toast from 'react-hot-toast'
 import { PurchaseConfirmationModal } from '../../components/purchases/PurchaseConfirmation'
-import type { PurchaseConfirmationData } from '../../lib/confirmationPdf'
+import type { PurchaseConfirmationData } from '../../lib/confirmationImage'
 
 type EventPlan = Database['public']['Tables']['event_plans']['Row']
 type EventRegistration = Pick<Database['public']['Tables']['event_registrations']['Row'], 'id' | 'status' | 'payment_status' | 'event_plan_id'>

@@ -8,7 +8,7 @@ import { format, addDays, isBefore, startOfDay } from 'date-fns'
 import type { Database } from '../../lib/database.types'
 import toast from 'react-hot-toast'
 import { PurchaseConfirmation } from '../../components/purchases/PurchaseConfirmation'
-import type { PurchaseConfirmationData } from '../../lib/confirmationPdf'
+import type { PurchaseConfirmationData } from '../../lib/confirmationImage'
 
 type Service = Database['public']['Tables']['pooja_services']['Row']
 type Slot = Database['public']['Tables']['pooja_service_slots']['Row']

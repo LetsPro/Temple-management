@@ -8,7 +8,7 @@ import { useAuth } from '../../contexts/AuthContext'
 import { registerForEvent } from '../../lib/eventRegistration'
 import toast from 'react-hot-toast'
 import { PurchaseConfirmationModal } from '../../components/purchases/PurchaseConfirmation'
-import type { PurchaseConfirmationData } from '../../lib/confirmationPdf'
+import type { PurchaseConfirmationData } from '../../lib/confirmationImage'
 
 type EventPlan = Database['public']['Tables']['event_plans']['Row']
 type Event = Database['public']['Tables']['events']['Row'] & { event_plans: EventPlan[] }

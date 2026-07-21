@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { CheckCircle2, Download, MailCheck, Printer, X } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
-import { downloadConfirmationPdf, type PurchaseConfirmationData, type TicketTempleDetails } from '../../lib/confirmationPdf'
+import { downloadConfirmationImage, type PurchaseConfirmationData, type TicketTempleDetails } from '../../lib/confirmationImage'
 import toast from 'react-hot-toast'
 
 const defaultTemple: TicketTempleDetails = { templeName: 'Shri Tripura Sundari Lalithambe Trust' }
@@ -9,18 +9,28 @@ const defaultTemple: TicketTempleDetails = { templeName: 'Shri Tripura Sundari L
 export function PurchaseConfirmation({ data, onDone, doneLabel = 'Done' }: { data: PurchaseConfirmationData; onDone?: () => void; doneLabel?: string }) {
   const [temple, setTemple] = useState<TicketTempleDetails>(defaultTemple)
   const [downloading, setDownloading] = useState(false)
+  const [settingsReady, setSettingsReady] = useState(false)
+  const autoDownloaded = useRef(false)
 
   useEffect(() => {
-    supabase.from('temple_settings').select('temple_name,tagline,address,phone,email,receipt_footer_note').limit(1).maybeSingle().then(({ data: settings }) => {
-      if (!settings) return
-      setTemple({ templeName: settings.temple_name || defaultTemple.templeName, tagline: settings.tagline, address: settings.address, phone: settings.phone, email: settings.email, footerNote: settings.receipt_footer_note })
-    })
+    const loadSettings = async () => {
+      const { data: settings } = await supabase.from('temple_settings').select('temple_name,tagline,address,phone,email,receipt_footer_note').limit(1).maybeSingle()
+      if (settings) setTemple({ templeName: settings.temple_name || defaultTemple.templeName, tagline: settings.tagline, address: settings.address, phone: settings.phone, email: settings.email, footerNote: settings.receipt_footer_note })
+      setSettingsReady(true)
+    }
+    loadSettings()
   }, [])
+
+  useEffect(() => {
+    if (!settingsReady || autoDownloaded.current) return
+    autoDownloaded.current = true
+    downloadConfirmationImage(data, temple).catch(() => toast.error('Automatic ticket download was blocked. Use Download Ticket below.'))
+  }, [data, settingsReady, temple])
 
   const download = async () => {
     setDownloading(true)
-    try { await downloadConfirmationPdf(data, temple) }
-    catch { toast.error('Could not create the PDF ticket. Please try again.') }
+    try { await downloadConfirmationImage(data, temple) }
+    catch { toast.error('Could not create the ticket image. Please try again.') }
     finally { setDownloading(false) }
   }
 
@@ -48,7 +58,7 @@ export function PurchaseConfirmation({ data, onDone, doneLabel = 'Done' }: { dat
       <div className="purchase-ticket-foot">{temple.address && <span>{temple.address}</span>}<span>{[temple.phone, temple.email].filter(Boolean).join(' · ')}</span></div>
     </div>
     <div className="purchase-actions no-print">
-      <button type="button" className="btn-secondary" onClick={download} disabled={downloading}><Download size={17} /> {downloading ? 'Preparing PDF...' : 'Download PDF'}</button>
+      <button type="button" className="btn-secondary" onClick={download} disabled={downloading}><Download size={17} /> {downloading ? 'Preparing ticket...' : 'Download Ticket'}</button>
       <button type="button" className="btn-secondary" onClick={() => window.print()}><Printer size={17} /> Print</button>
       {onDone && <button type="button" className="btn-primary" onClick={onDone}>{doneLabel}</button>}
     </div>
