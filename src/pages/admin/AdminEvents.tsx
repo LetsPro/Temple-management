@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Plus, CreditCard as Edit, X, Save, ToggleLeft, ToggleRight, ImagePlus, Trash2, IndianRupee, GripVertical } from 'lucide-react'
+import { Plus, CreditCard as Edit, X, Save, ToggleLeft, ToggleRight, ImagePlus, Trash2, IndianRupee, DollarSign, GripVertical } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -13,7 +13,8 @@ import toast from 'react-hot-toast'
 type EventRow = Database['public']['Tables']['events']['Row']
 type EventPlan = Database['public']['Tables']['event_plans']['Row']
 type Event = EventRow & { event_plans: EventPlan[] }
-type PlanDraft = { clientKey: string; id?: string; name: string; price: number | '' }
+type PlanMarket = 'india' | 'international'
+type PlanDraft = { clientKey: string; id?: string; name: string; price: number | ''; market: PlanMarket }
 
 const schema = z.object({
   title: z.string().min(2, 'Enter an event title.'),
@@ -30,7 +31,7 @@ const schema = z.object({
 })
 type FormData = z.infer<typeof schema>
 
-const blankPlan = (): PlanDraft => ({ clientKey: crypto.randomUUID(), name: '', price: '' })
+const blankPlan = (market: PlanMarket = 'india'): PlanDraft => ({ clientKey: crypto.randomUUID(), name: '', price: '', market })
 
 export default function AdminEvents() {
   const [events, setEvents] = useState<Event[]>([])
@@ -39,6 +40,8 @@ export default function AdminEvents() {
   const [editing, setEditing] = useState<Event | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [plans, setPlans] = useState<PlanDraft[]>([blankPlan()])
+  const [enabledMarkets, setEnabledMarkets] = useState<Record<PlanMarket, boolean>>({ india: true, international: false })
+  const [activeMarket, setActiveMarket] = useState<PlanMarket>('india')
   const [draggingPlanKey, setDraggingPlanKey] = useState<string | null>(null)
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null)
   const [thumbnailPreview, setThumbnailPreview] = useState('')
@@ -66,6 +69,8 @@ export default function AdminEvents() {
     setEditing(null)
     setDraggingPlanKey(null)
     setPlans([blankPlan()])
+    setEnabledMarkets({ india: true, international: false })
+    setActiveMarket('india')
     setThumbnailFile(null)
     setThumbnailPreview('')
     reset({
@@ -79,7 +84,11 @@ export default function AdminEvents() {
     setEditing(event)
     setDraggingPlanKey(null)
     const activePlans = (event.event_plans || []).filter(plan => plan.is_active).sort((a, b) => a.display_order - b.display_order)
-    setPlans(activePlans.length ? activePlans.map(plan => ({ clientKey: crypto.randomUUID(), id: plan.id, name: plan.name, price: Number(plan.price) })) : [blankPlan()])
+    const hasIndiaPlans = activePlans.some(plan => plan.market === 'india')
+    const hasInternationalPlans = activePlans.some(plan => plan.market === 'international')
+    setEnabledMarkets({ india: hasIndiaPlans || !activePlans.length, international: hasInternationalPlans })
+    setActiveMarket(hasIndiaPlans || !hasInternationalPlans ? 'india' : 'international')
+    setPlans(activePlans.length ? activePlans.map(plan => ({ clientKey: crypto.randomUUID(), id: plan.id, name: plan.name, price: Number(plan.price), market: plan.market })) : [blankPlan()])
     setThumbnailFile(null)
     setThumbnailPreview(event.banner_image_url || '')
     reset({
@@ -117,9 +126,13 @@ export default function AdminEvents() {
   }
 
   const onSubmit = async (data: FormData) => {
-    const validPlans = plans.map(plan => ({ ...plan, name: plan.name.trim(), price: Number(plan.price) }))
-    if (data.pricing_type === 'paid' && (validPlans.length === 0 || validPlans.some(plan => !plan.name || !Number.isFinite(plan.price) || plan.price <= 0))) {
-      toast.error('Every paid plan needs a name and a price greater than ₹0.')
+    const selectedMarkets = (Object.keys(enabledMarkets) as PlanMarket[]).filter(market => enabledMarkets[market])
+    const validPlans = plans
+      .filter(plan => enabledMarkets[plan.market])
+      .map(plan => ({ ...plan, name: plan.name.trim(), price: Number(plan.price) }))
+    const missingMarketPlans = selectedMarkets.some(market => !validPlans.some(plan => plan.market === market))
+    if (data.pricing_type === 'paid' && (!selectedMarkets.length || missingMarketPlans || validPlans.some(plan => !plan.name || !Number.isFinite(plan.price) || plan.price <= 0))) {
+      toast.error('Each selected region needs at least one complete plan with a price greater than zero.')
       return
     }
 
@@ -150,13 +163,16 @@ export default function AdminEvents() {
       if (deactivateError) throw deactivateError
 
       if (data.pricing_type === 'paid') {
-        const planRows = validPlans.map((plan, index) => ({
+        const marketOrder: Record<PlanMarket, number> = { india: 0, international: 0 }
+        const planRows = validPlans.map(plan => ({
           id: plan.id,
           event_id: eventId,
           name: plan.name,
           price: plan.price,
+          market: plan.market,
+          currency: plan.market === 'international' ? 'USD' as const : 'INR' as const,
           is_active: true,
-          display_order: index,
+          display_order: marketOrder[plan.market]++,
         }))
         const existingPlanRows = planRows.filter(plan => plan.id).map(plan => ({ ...plan, id: plan.id! }))
         const newPlanRows = planRows.filter(plan => !plan.id).map(({ id: _id, ...plan }) => plan)
@@ -190,28 +206,45 @@ export default function AdminEvents() {
     load()
   }
 
-  const updatePlan = (index: number, field: 'name' | 'price', value: string) => {
-    setPlans(current => current.map((plan, planIndex) => planIndex === index
+  const updatePlan = (clientKey: string, field: 'name' | 'price', value: string) => {
+    setPlans(current => current.map(plan => plan.clientKey === clientKey
       ? { ...plan, [field]: field === 'price' ? (value === '' ? '' : Number(value)) : value }
       : plan))
   }
-  const removePlan = (index: number) => setPlans(current => current.filter((_, planIndex) => planIndex !== index))
-  const movePlan = (planKey: string, targetIndex: number) => {
+  const removePlan = (clientKey: string) => setPlans(current => current.filter(plan => plan.clientKey !== clientKey))
+  const movePlan = (planKey: string, targetKey: string) => {
     setPlans(current => {
       const sourceIndex = current.findIndex(plan => plan.clientKey === planKey)
-      if (sourceIndex < 0 || sourceIndex === targetIndex) return current
+      const targetIndex = current.findIndex(plan => plan.clientKey === targetKey)
+      if (sourceIndex < 0 || targetIndex < 0 || sourceIndex === targetIndex || current[sourceIndex].market !== current[targetIndex].market) return current
       const reordered = [...current]
       const [moved] = reordered.splice(sourceIndex, 1)
       reordered.splice(targetIndex, 0, moved)
       return reordered
     })
   }
-  const movePlanByKeyboard = (index: number, direction: -1 | 1) => {
+  const movePlanByKeyboard = (clientKey: string, direction: -1 | 1) => {
+    const marketPlans = plans.filter(plan => plan.market === activeMarket)
+    const index = marketPlans.findIndex(plan => plan.clientKey === clientKey)
     const targetIndex = index + direction
-    if (targetIndex < 0 || targetIndex >= plans.length) return
-    movePlan(plans[index].clientKey, targetIndex)
+    if (index < 0 || targetIndex < 0 || targetIndex >= marketPlans.length) return
+    movePlan(clientKey, marketPlans[targetIndex].clientKey)
+  }
+  const toggleMarket = (market: PlanMarket, checked: boolean) => {
+    if (!checked && (Object.keys(enabledMarkets) as PlanMarket[]).filter(item => enabledMarkets[item]).length === 1) {
+      toast.error('Select at least one region for paid plans.')
+      return
+    }
+    setEnabledMarkets(current => ({ ...current, [market]: checked }))
+    if (checked) {
+      setActiveMarket(market)
+      if (!plans.some(plan => plan.market === market)) setPlans(current => [...current, blankPlan(market)])
+    } else if (activeMarket === market) {
+      setActiveMarket(market === 'india' ? 'international' : 'india')
+    }
   }
   const nameToSlug = (name: string) => name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+  const visiblePlans = plans.filter(plan => plan.market === activeMarket)
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -314,14 +347,34 @@ export default function AdminEvents() {
                 </fieldset>
 
                 <fieldset disabled={pricingType === 'free'} className={pricingType === 'free' ? 'opacity-50' : ''}>
+                  <legend className="label">Plan regions *</legend>
+                  <div className="grid grid-cols-2 gap-3 mb-4">
+                    {([
+                      ['india', 'India', 'Prices in Indian rupees'],
+                      ['international', 'International', 'Prices in US dollars'],
+                    ] as const).map(([market, label, description]) => (
+                      <label key={market} className={`cursor-pointer rounded-xl border p-3 flex items-start gap-2 ${enabledMarkets[market] ? 'border-vermilion-600 bg-vermilion-50' : 'border-temple-border'}`}>
+                        <input type="checkbox" checked={enabledMarkets[market]} onChange={event => toggleMarket(market, event.target.checked)} className="mt-0.5 accent-vermilion-700" />
+                        <span><strong className="block text-sm text-temple-text">{label}</strong><small className="text-temple-muted">{description}</small></span>
+                      </label>
+                    ))}
+                  </div>
+
                   <div className="flex items-center justify-between mb-2">
-                    <div><legend className="label mb-0">Paid plans *</legend><p className="text-xs text-temple-muted">Add plans, then drag the handle to set their display order.</p></div>
-                    <button type="button" disabled={pricingType === 'free'} onClick={() => setPlans(current => [...current, blankPlan()])} className="btn-secondary text-xs"><Plus size={13} /> Add Plan</button>
+                    <div><div className="label mb-0">Paid plans *</div><p className="text-xs text-temple-muted">Add plans, then drag the handle to set their display order.</p></div>
+                    <button type="button" disabled={pricingType === 'free'} onClick={() => setPlans(current => [...current, blankPlan(activeMarket)])} className="btn-secondary text-xs"><Plus size={13} /> Add Plan</button>
+                  </div>
+                  <div className="inline-flex rounded-lg bg-cream-100 p-1 mb-3" role="tablist" aria-label="Plan region">
+                    {(Object.keys(enabledMarkets) as PlanMarket[]).filter(market => enabledMarkets[market]).map(market => (
+                      <button key={market} type="button" role="tab" aria-selected={activeMarket === market} onClick={() => setActiveMarket(market)} className={`rounded-md px-3 py-1.5 text-xs font-semibold transition-colors ${activeMarket === market ? 'bg-white text-vermilion-700 shadow-sm' : 'text-temple-muted'}`}>
+                        {market === 'india' ? 'India · INR' : 'International · USD'}
+                      </button>
+                    ))}
                   </div>
                   <div className="space-y-3">
-                    {plans.map((plan, index) => <div
+                    {visiblePlans.map((plan, index) => <div
                       key={plan.clientKey}
-                      onDragEnter={event => { event.preventDefault(); if (draggingPlanKey) movePlan(draggingPlanKey, index) }}
+                      onDragEnter={event => { event.preventDefault(); if (draggingPlanKey) movePlan(draggingPlanKey, plan.clientKey) }}
                       onDragOver={event => event.preventDefault()}
                       className={`grid grid-cols-[auto_minmax(0,1fr)_100px_auto] sm:grid-cols-[auto_minmax(0,1fr)_150px_auto] gap-2 items-end rounded-xl transition-colors ${draggingPlanKey === plan.clientKey ? 'bg-cream-100 ring-1 ring-saffron-300' : ''}`}
                     >
@@ -331,16 +384,16 @@ export default function AdminEvents() {
                         onDragStart={event => { event.dataTransfer.effectAllowed = 'move'; event.dataTransfer.setData('text/plain', plan.clientKey); setDraggingPlanKey(plan.clientKey) }}
                         onDragEnd={() => setDraggingPlanKey(null)}
                         onKeyDown={event => {
-                          if (event.key === 'ArrowUp') { event.preventDefault(); movePlanByKeyboard(index, -1) }
-                          if (event.key === 'ArrowDown') { event.preventDefault(); movePlanByKeyboard(index, 1) }
+                          if (event.key === 'ArrowUp') { event.preventDefault(); movePlanByKeyboard(plan.clientKey, -1) }
+                          if (event.key === 'ArrowDown') { event.preventDefault(); movePlanByKeyboard(plan.clientKey, 1) }
                         }}
                         className="mb-1 p-2.5 rounded-xl text-temple-muted hover:text-vermilion-700 hover:bg-cream-100 cursor-grab active:cursor-grabbing focus:outline-none focus:ring-2 focus:ring-vermilion-300"
                         aria-label={`Reorder ${plan.name || `plan ${index + 1}`}. Use arrow keys or drag.`}
                         title="Drag to reorder"
                       ><GripVertical size={18} /></button>
-                      <div><label className="label">Plan name</label><input value={plan.name} onChange={event => updatePlan(index, 'name', event.target.value)} className="input-field" placeholder="e.g. Individual Pass" /></div>
-                      <div><label className="label">Price</label><div className="relative"><IndianRupee size={14} className="absolute left-3 top-3.5 text-temple-muted" /><input value={plan.price} onChange={event => updatePlan(index, 'price', event.target.value)} type="number" min="1" step="0.01" className="input-field pl-8" placeholder="500" /></div></div>
-                      <button type="button" onClick={() => removePlan(index)} disabled={plans.length === 1} className="mb-1 p-2.5 rounded-xl text-red-600 hover:bg-red-50 disabled:opacity-30" aria-label="Remove plan"><Trash2 size={17} /></button>
+                      <div><label className="label">Plan name</label><input value={plan.name} onChange={event => updatePlan(plan.clientKey, 'name', event.target.value)} className="input-field" placeholder="e.g. Individual Pass" /></div>
+                      <div><label className="label">Price ({activeMarket === 'india' ? 'INR' : 'USD'})</label><div className="relative">{activeMarket === 'india' ? <IndianRupee size={14} className="absolute left-3 top-3.5 text-temple-muted" /> : <DollarSign size={14} className="absolute left-3 top-3.5 text-temple-muted" />}<input value={plan.price} onChange={event => updatePlan(plan.clientKey, 'price', event.target.value)} type="number" min="0.01" step="0.01" className="input-field pl-8" placeholder={activeMarket === 'india' ? '500' : '25'} /></div></div>
+                      <button type="button" onClick={() => removePlan(plan.clientKey)} disabled={visiblePlans.length === 1} className="mb-1 p-2.5 rounded-xl text-red-600 hover:bg-red-50 disabled:opacity-30" aria-label="Remove plan"><Trash2 size={17} /></button>
                     </div>)}
                   </div>
                   {pricingType === 'free' && <p className="text-xs text-temple-muted mt-2">Plans are disabled for free events.</p>}

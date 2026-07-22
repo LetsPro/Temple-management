@@ -9,9 +9,11 @@ import { registerForEvent } from '../../lib/eventRegistration'
 import toast from 'react-hot-toast'
 import { PurchaseConfirmationModal } from '../../components/purchases/PurchaseConfirmation'
 import type { PurchaseConfirmationData } from '../../lib/confirmationImage'
+import { formatCurrency } from '../../lib/currency'
 
 type EventPlan = Database['public']['Tables']['event_plans']['Row']
 type Event = Database['public']['Tables']['events']['Row'] & { event_plans: EventPlan[] }
+type PlanMarket = EventPlan['market']
 
 export default function EventDetailPage() {
   const { slug } = useParams()
@@ -22,6 +24,7 @@ export default function EventDetailPage() {
   const [registered, setRegistered] = useState(false)
   const [registrationLoading, setRegistrationLoading] = useState(false)
   const [selectedPlanId, setSelectedPlanId] = useState('')
+  const [planMarket, setPlanMarket] = useState<PlanMarket>('india')
   const [guest, setGuest] = useState({ name: '', email: '', mobile: '' })
   const [confirmation, setConfirmation] = useState<PurchaseConfirmationData | null>(null)
 
@@ -37,7 +40,9 @@ export default function EventDetailPage() {
       const typedEvent = data as Event
       typedEvent.event_plans = (typedEvent.event_plans || []).filter(plan => plan.is_active).sort((a, b) => a.display_order - b.display_order)
       setEvent(typedEvent)
-      setSelectedPlanId(typedEvent.event_plans[0]?.id || '')
+      const initialMarket: PlanMarket = typedEvent.event_plans.some(plan => plan.market === 'india') ? 'india' : 'international'
+      setPlanMarket(initialMarket)
+      setSelectedPlanId(typedEvent.event_plans.find(plan => plan.market === initialMarket)?.id || '')
 
       if (user) {
         const { data: registration } = await supabase
@@ -47,7 +52,11 @@ export default function EventDetailPage() {
           .eq('devotee_id', user.id)
           .maybeSingle()
         setRegistered(registration?.status === 'registered' && (typedEvent.pricing_type === 'free' || registration.payment_status === 'paid'))
-        if (registration?.event_plan_id) setSelectedPlanId(registration.event_plan_id)
+        if (registration?.event_plan_id) {
+          setSelectedPlanId(registration.event_plan_id)
+          const registeredPlan = typedEvent.event_plans.find(plan => plan.id === registration.event_plan_id)
+          if (registeredPlan) setPlanMarket(registeredPlan.market)
+        }
       }
       setLoading(false)
     }
@@ -67,6 +76,7 @@ export default function EventDetailPage() {
         title: 'Your place is confirmed',
         subtitle: `Your registration for ${event.title} is confirmed. Please keep this ticket for entry.`,
         amount: event.pricing_type === 'paid' ? Number(selectedPlan?.price || 0) : undefined,
+        currency: selectedPlan?.currency,
         email: user ? (profile?.email || user.email || '') : guest.email,
         emailSent: result.emailSent,
         details: [
@@ -103,6 +113,12 @@ export default function EventDetailPage() {
   const isMultiDay = format(start, 'yyyy-MM-dd') !== format(end, 'yyyy-MM-dd')
   const canRegister = event.registration_enabled && (!event.registration_closing_date || new Date(event.registration_closing_date) > new Date())
   const selectedPlan = event.event_plans.find(plan => plan.id === selectedPlanId)
+  const availableMarkets = (['india', 'international'] as PlanMarket[]).filter(market => event.event_plans.some(plan => plan.market === market))
+  const visiblePlans = event.event_plans.filter(plan => plan.market === planMarket)
+  const selectMarket = (market: PlanMarket) => {
+    setPlanMarket(market)
+    setSelectedPlanId(event.event_plans.find(plan => plan.market === market)?.id || '')
+  }
 
   return (
     <div className="page-container py-10">
@@ -147,12 +163,17 @@ export default function EventDetailPage() {
           </div>
 
           {canRegister && !registered && event.pricing_type === 'paid' && (
-            <div className="mb-4">
+            <div className="mb-4 rounded-2xl border border-temple-border p-3">
               <div className="flex items-center gap-2 font-semibold text-sm text-temple-text mb-2"><Ticket size={15} /> Select a plan</div>
+              {availableMarkets.length > 1 && <div className="grid grid-cols-2 rounded-lg bg-cream-100 p-1 mb-3" role="tablist" aria-label="Plan region">
+                {availableMarkets.map(market => <button key={market} type="button" role="tab" aria-selected={planMarket === market} onClick={() => selectMarket(market)} className={`rounded-md px-2 py-1.5 text-xs font-semibold transition-colors ${planMarket === market ? 'bg-white text-vermilion-700 shadow-sm' : 'text-temple-muted hover:text-temple-text'}`}>
+                  {market === 'india' ? 'India' : 'International'}
+                </button>)}
+              </div>}
               <div className="space-y-2">
-                {event.event_plans.map(plan => <label key={plan.id} className={`flex items-center justify-between gap-3 rounded-xl border p-3 cursor-pointer ${selectedPlanId === plan.id ? 'border-vermilion-600 bg-vermilion-50' : 'border-temple-border'}`}>
+                {visiblePlans.map(plan => <label key={plan.id} className={`flex items-center justify-between gap-3 rounded-xl border p-3 cursor-pointer ${selectedPlanId === plan.id ? 'border-vermilion-600 bg-vermilion-50' : 'border-temple-border'}`}>
                   <span className="flex items-center gap-2"><input type="radio" name="event-plan" checked={selectedPlanId === plan.id} onChange={() => setSelectedPlanId(plan.id)} className="accent-vermilion-700" /><span className="text-sm font-medium text-temple-text">{plan.name}</span></span>
-                  <strong className="text-sm text-vermilion-700">₹{Number(plan.price).toLocaleString('en-IN')}</strong>
+                  <strong className="text-sm text-vermilion-700">{formatCurrency(Number(plan.price), plan.currency)}</strong>
                 </label>)}
                 {event.event_plans.length === 0 && <p className="text-sm text-amber-700 bg-amber-50 rounded-xl p-3">Paid plans are not available yet.</p>}
               </div>
@@ -180,7 +201,7 @@ export default function EventDetailPage() {
             ) : (
               <button onClick={handleRegister} disabled={registrationLoading || (event.pricing_type === 'paid' && !selectedPlan)} className="btn-primary w-full justify-center py-2.5">
                 {event.pricing_type === 'paid' && <CreditCard size={16} />}
-                {registrationLoading ? 'Processing...' : event.pricing_type === 'paid' && selectedPlan ? `Pay ₹${Number(selectedPlan.price).toLocaleString('en-IN')} & Register` : 'Register for Free'}
+                {registrationLoading ? 'Processing...' : event.pricing_type === 'paid' && selectedPlan ? `Pay ${formatCurrency(Number(selectedPlan.price), selectedPlan.currency)} & Register` : 'Register for Free'}
               </button>
             )
           )}

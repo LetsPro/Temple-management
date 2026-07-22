@@ -1,3 +1,5 @@
+import { formatCurrency, type SupportedCurrency } from './currency'
+
 export type TicketDetail = { label: string; value: string }
 
 export type PurchaseConfirmationData = {
@@ -6,6 +8,7 @@ export type PurchaseConfirmationData = {
   title: string
   subtitle: string
   amount?: number
+  currency?: SupportedCurrency
   email?: string
   emailSent?: boolean
   details: TicketDetail[]
@@ -157,7 +160,7 @@ export async function createConfirmationImage(data: PurchaseConfirmationData, te
     context.textAlign = 'right'
     context.fillStyle = MAROON
     context.font = '700 34px Arial, sans-serif'
-    context.fillText(`₹${data.amount.toLocaleString('en-IN')}`, 930, y + 43)
+    context.fillText(formatCurrency(data.amount, data.currency), 930, y + 43)
     context.textAlign = 'left'
   }
 

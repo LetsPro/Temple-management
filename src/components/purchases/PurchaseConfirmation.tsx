@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { CheckCircle2, Download, MailCheck, Printer, X } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { downloadConfirmationImage, type PurchaseConfirmationData, type TicketTempleDetails } from '../../lib/confirmationImage'
+import { formatCurrency } from '../../lib/currency'
 import toast from 'react-hot-toast'
 
 const defaultTemple: TicketTempleDetails = { templeName: 'Shri Tripura Sundari Lalithambe Trust' }
@@ -48,7 +49,7 @@ export function PurchaseConfirmation({ data, onDone, doneLabel = 'Done' }: { dat
         <p>{data.subtitle}</p>
         <div className="purchase-reference"><small>Confirmation reference</small><strong>{data.reference}</strong></div>
         <dl>{data.details.map(detail => <div key={`${detail.label}-${detail.value}`}><dt>{detail.label}</dt><dd>{detail.value}</dd></div>)}</dl>
-        {data.amount !== undefined && <div className="purchase-total"><span>Amount paid</span><strong>₹{data.amount.toLocaleString('en-IN')}</strong></div>}
+        {data.amount !== undefined && <div className="purchase-total"><span>Amount paid</span><strong>{formatCurrency(data.amount, data.currency)}</strong></div>}
         <div className={`purchase-email-status ${data.emailSent ? 'sent' : ''}`}>
           <MailCheck />
           <span>{data.emailSent ? `Confirmation email sent${data.email ? ` to ${data.email}` : ''}.` : data.email ? 'Payment is confirmed. Email delivery may take a few minutes.' : 'No email address was provided. Download this ticket for your records.'}</span>

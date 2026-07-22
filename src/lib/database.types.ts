@@ -551,6 +551,8 @@ export interface Database {
           event_id: string
           name: string
           price: number
+          market: 'india' | 'international'
+          currency: 'INR' | 'USD'
           is_active: boolean
           display_order: number
           created_at: string
@@ -561,6 +563,8 @@ export interface Database {
           event_id: string
           name: string
           price: number
+          market?: 'india' | 'international'
+          currency?: 'INR' | 'USD'
           is_active?: boolean
           display_order?: number
         }
@@ -568,6 +572,8 @@ export interface Database {
           event_id?: string
           name?: string
           price?: number
+          market?: 'india' | 'international'
+          currency?: 'INR' | 'USD'
           is_active?: boolean
           display_order?: number
         }
@@ -583,6 +589,7 @@ export interface Database {
           guest_mobile: string
           event_plan_id: string | null
           amount: number
+          currency: 'INR' | 'USD'
           payment_status: 'not_required' | 'pending' | 'paid' | 'failed' | 'refunded'
           participant_count: number
           notes: string
@@ -598,6 +605,7 @@ export interface Database {
           guest_mobile?: string
           event_plan_id?: string | null
           amount?: number
+          currency?: 'INR' | 'USD'
           payment_status?: 'not_required' | 'pending' | 'paid' | 'failed' | 'refunded'
           participant_count?: number
           notes?: string
@@ -611,6 +619,7 @@ export interface Database {
           guest_mobile?: string
           event_plan_id?: string | null
           amount?: number
+          currency?: 'INR' | 'USD'
           payment_status?: 'not_required' | 'pending' | 'paid' | 'failed' | 'refunded'
           participant_count?: number
           notes?: string

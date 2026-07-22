@@ -50,9 +50,9 @@ const escapeHtml = (value: unknown) => textValue(value)
   .replaceAll('"', '&quot;')
   .replaceAll("'", '&#039;')
 
-const formatCurrency = (value: unknown) => new Intl.NumberFormat('en-IN', {
+const formatCurrency = (value: unknown, currency: unknown = 'INR') => new Intl.NumberFormat(currency === 'USD' ? 'en-US' : 'en-IN', {
   style: 'currency',
-  currency: 'INR',
+  currency: currency === 'USD' ? 'USD' : 'INR',
   maximumFractionDigits: 2,
 }).format(Number(value || 0))
 
@@ -183,7 +183,7 @@ async function buildMembershipContent(admin: SupabaseClient, referenceId: string
 async function buildEventContent(admin: SupabaseClient, referenceId: string): Promise<ConfirmationContent> {
   const { data, error } = await admin
     .from('event_registrations')
-    .select('id,event_id,devotee_id,guest_name,guest_email,guest_mobile,event_plan_id,participant_count,notes,amount,payment_status,status,events(title,description,start_datetime,end_datetime,venue),event_plans(name,price)')
+    .select('id,event_id,devotee_id,guest_name,guest_email,guest_mobile,event_plan_id,participant_count,notes,amount,currency,payment_status,status,events(title,description,start_datetime,end_datetime,venue),event_plans(name,price,currency)')
     .eq('id', referenceId)
     .single()
   if (error || !data) throw new Error('Event registration details were not found.')
@@ -217,7 +217,7 @@ async function buildEventContent(admin: SupabaseClient, referenceId: string): Pr
       { label: 'Ends', value: formatDate(event.end_datetime, true) },
       { label: 'Venue', value: textValue(event.venue, 'Temple premises') },
       { label: 'Participants', value: textValue(registration.participant_count, '1') },
-      { label: isFree ? 'Entry' : 'Amount paid', value: isFree ? 'Free' : formatCurrency(registration.amount) },
+      { label: isFree ? 'Entry' : 'Amount paid', value: isFree ? 'Free' : formatCurrency(registration.amount, registration.currency || plan.currency) },
       ...(registration.notes ? [{ label: 'Registration note', value: textValue(registration.notes) }] : []),
     ],
     note: textValue(event.description),

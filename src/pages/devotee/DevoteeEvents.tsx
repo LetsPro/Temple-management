@@ -11,6 +11,7 @@ import { Skeleton } from '../../components/ui/Skeleton'
 import toast from 'react-hot-toast'
 import { PurchaseConfirmationModal } from '../../components/purchases/PurchaseConfirmation'
 import type { PurchaseConfirmationData } from '../../lib/confirmationImage'
+import { formatCurrency } from '../../lib/currency'
 
 type EventPlan = Database['public']['Tables']['event_plans']['Row']
 type EventRegistration = Pick<Database['public']['Tables']['event_registrations']['Row'], 'id' | 'status' | 'payment_status' | 'event_plan_id'>
@@ -66,6 +67,7 @@ export default function DevoteeEvents() {
         title: 'Your place is confirmed',
         subtitle: `Your registration for ${event.title} is confirmed. Please keep this ticket for entry.`,
         amount: event.pricing_type === 'paid' ? Number(plan?.price || 0) : undefined,
+        currency: plan?.currency,
         email: profile?.email || user.email || '',
         emailSent: result.emailSent,
         details: [
@@ -139,7 +141,7 @@ export default function DevoteeEvents() {
 
                       {canRegister && !isRegistered && event.pricing_type === 'paid' && event.event_plans.length > 0 && (
                         <select value={selectedPlans[event.id] || ''} onChange={change => setSelectedPlans(current => ({ ...current, [event.id]: change.target.value }))} className="input-field max-w-xs mb-3 py-2 text-sm" aria-label={`Select a plan for ${event.title}`}>
-                          {event.event_plans.map(plan => <option key={plan.id} value={plan.id}>{plan.name} · ₹{Number(plan.price).toLocaleString('en-IN')}</option>)}
+                          {event.event_plans.map(plan => <option key={plan.id} value={plan.id}>{plan.market === 'india' ? 'India' : 'International'} · {plan.name} · {formatCurrency(Number(plan.price), plan.currency)}</option>)}
                         </select>
                       )}
 
@@ -151,7 +153,7 @@ export default function DevoteeEvents() {
                       ) : (
                         <button onClick={() => handleRegister(event)} disabled={registering === event.id || (event.pricing_type === 'paid' && !selectedPlan)} className="btn-primary text-sm py-1.5">
                           {event.pricing_type === 'paid' && <CreditCard size={14} />}
-                          {registering === event.id ? 'Processing...' : event.pricing_type === 'paid' && selectedPlan ? `Pay ₹${Number(selectedPlan.price).toLocaleString('en-IN')} & Register` : 'Register for Free'}
+                          {registering === event.id ? 'Processing...' : event.pricing_type === 'paid' && selectedPlan ? `Pay ${formatCurrency(Number(selectedPlan.price), selectedPlan.currency)} & Register` : 'Register for Free'}
                         </button>
                       ))}
                       {!event.registration_enabled && <span className="text-xs text-temple-muted bg-cream-100 px-2.5 py-1 rounded-full">Open to all — no registration needed</span>}

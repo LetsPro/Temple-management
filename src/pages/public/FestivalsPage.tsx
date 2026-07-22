@@ -6,6 +6,7 @@ import type { Database } from '../../lib/database.types'
 import { format, isFuture, isPast } from 'date-fns'
 import { Skeleton } from '../../components/ui/Skeleton'
 import EmptyState from '../../components/ui/EmptyState'
+import { formatCurrency } from '../../lib/currency'
 
 type EventPlan = Database['public']['Tables']['event_plans']['Row']
 type Event = Database['public']['Tables']['events']['Row'] & { event_plans: EventPlan[] }
@@ -78,7 +79,12 @@ function EventCard({ event }: { event: Event }) {
   const end = new Date(event.end_datetime)
   const isMultiDay = format(start, 'yyyy-MM-dd') !== format(end, 'yyyy-MM-dd')
   const activePlans = (event.event_plans || []).filter(plan => plan.is_active)
-  const lowestPrice = activePlans.length ? Math.min(...activePlans.map(plan => Number(plan.price))) : null
+  const indiaPlans = activePlans.filter(plan => plan.market === 'india')
+  const internationalPlans = activePlans.filter(plan => plan.market === 'international')
+  const startingPrices = [
+    indiaPlans.length ? formatCurrency(Math.min(...indiaPlans.map(plan => Number(plan.price))), 'INR') : '',
+    internationalPlans.length ? formatCurrency(Math.min(...internationalPlans.map(plan => Number(plan.price))), 'USD') : '',
+  ].filter(Boolean).join(' / ')
 
   return (
     <div className="card hover:shadow-temple-md transition-all duration-200">
@@ -99,7 +105,7 @@ function EventCard({ event }: { event: Event }) {
           <span className="text-xs bg-green-50 text-green-700 border border-green-200 px-2.5 py-0.5 rounded-full font-medium">Registration Open</span>
         )}
         <span className={`text-xs px-2.5 py-0.5 rounded-full font-medium ${event.pricing_type === 'paid' ? 'bg-blue-50 text-blue-700' : 'bg-emerald-50 text-emerald-700'}`}>
-          {event.pricing_type === 'paid' ? lowestPrice ? `From ₹${lowestPrice.toLocaleString('en-IN')}` : 'Paid' : 'Free'}
+          {event.pricing_type === 'paid' ? startingPrices ? `From ${startingPrices}` : 'Paid' : 'Free'}
         </span>
       </div>
 

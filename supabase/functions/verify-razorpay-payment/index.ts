@@ -19,7 +19,7 @@ Deno.serve(async (req: Request) => {
     if (expected !== razorpay_signature) return json({ error: 'Invalid payment signature' }, 400)
 
     const admin = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!, { auth: { persistSession: false } })
-    const { data: payment } = await admin.from('payments').select('id,amount,user_id').eq('reference_id', reference_id).eq('razorpay_order_id', razorpay_order_id).eq('payment_type', payment_type).single()
+    const { data: payment } = await admin.from('payments').select('id,amount,currency,user_id').eq('reference_id', reference_id).eq('razorpay_order_id', razorpay_order_id).eq('payment_type', payment_type).single()
     if (!payment) return json({ error: 'Payment order not found' }, 404)
 
     const paidAt = new Date().toISOString()
@@ -33,7 +33,7 @@ Deno.serve(async (req: Request) => {
       const expires = new Date(); expires.setMonth(expires.getMonth() + Number(plan?.duration_months || 0))
       await admin.from('memberships').update({ payment_status: 'paid', status: 'active', starts_at: paidAt, expires_at: expires.toISOString() }).eq('id', reference_id)
     } else if (payment_type === 'event') {
-      await admin.from('event_registrations').update({ payment_status: 'paid', status: 'registered', amount: payment.amount }).eq('id', reference_id)
+      await admin.from('event_registrations').update({ payment_status: 'paid', status: 'registered', amount: payment.amount, currency: payment.currency }).eq('id', reference_id)
     } else {
       const { data: booking } = await admin.from('bookings').update({ payment_status: 'paid', booking_status: 'confirmed' }).eq('id', reference_id).select('booking_number').single()
       bookingNumber = booking?.booking_number

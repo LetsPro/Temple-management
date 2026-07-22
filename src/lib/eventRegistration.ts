@@ -68,6 +68,7 @@ export async function registerForEvent(input: {
       const { error } = await supabase.from('event_registrations').update({
         event_plan_id: null,
         amount: 0,
+        currency: 'INR',
         payment_status: 'not_required',
         status: 'registered',
       }).eq('id', existing.id)
@@ -81,6 +82,7 @@ export async function registerForEvent(input: {
       event_plan_id: null,
       participant_count: 1,
       amount: 0,
+      currency: 'INR',
       payment_status: 'not_required',
       status: 'registered',
     }).select('id').single()
@@ -97,6 +99,7 @@ export async function registerForEvent(input: {
     const { error } = await supabase.from('event_registrations').update({
       event_plan_id: plan.id,
       amount: Number(plan.price),
+      currency: plan.currency,
       payment_status: 'pending',
       status: 'pending',
     }).eq('id', existing.id)
@@ -108,6 +111,7 @@ export async function registerForEvent(input: {
       event_plan_id: plan.id,
       participant_count: 1,
       amount: Number(plan.price),
+      currency: plan.currency,
       payment_status: 'pending',
       status: 'pending',
     }).select('id').single()

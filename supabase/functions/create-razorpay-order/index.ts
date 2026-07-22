@@ -27,6 +27,7 @@ Deno.serve(async (req: Request) => {
     if (error || !record) return json({ error: "Payment record not found" }, 404)
 
     let amount = Number((record as Record<string, unknown>).amount || (record as Record<string, unknown>).total_amount || 0)
+    let currency = 'INR'
     if (payment_type === 'membership') {
       const authHeader = req.headers.get('Authorization') || ''
       const token = authHeader.replace(/^Bearer\s+/i, '')
@@ -53,11 +54,12 @@ Deno.serve(async (req: Request) => {
       if (!event?.is_published || !event.registration_enabled || event.pricing_type !== 'paid') return json({ error: "This event is not accepting paid registrations" }, 400)
       if (new Date(event.end_datetime) <= new Date() || (event.registration_closing_date && new Date(event.registration_closing_date) <= new Date())) return json({ error: "Registration for this event is closed" }, 400)
 
-      const { data: plan } = await admin.from('event_plans').select('price,is_active').eq('id', (record as Record<string, unknown>).event_plan_id).eq('event_id', (record as Record<string, unknown>).event_id).single()
+      const { data: plan } = await admin.from('event_plans').select('price,currency,is_active').eq('id', (record as Record<string, unknown>).event_plan_id).eq('event_id', (record as Record<string, unknown>).event_id).single()
       if (!plan?.is_active) return json({ error: "The selected event plan is unavailable" }, 400)
       amount = Number(plan.price || 0)
+      currency = plan.currency === 'USD' ? 'USD' : 'INR'
 
-      await admin.from('event_registrations').update({ amount, payment_status: 'pending', status: 'pending' }).eq('id', reference_id)
+      await admin.from('event_registrations').update({ amount, currency, payment_status: 'pending', status: 'pending' }).eq('id', reference_id)
     }
     if (!amount) return json({ error: "Invalid amount" }, 400)
 
@@ -69,12 +71,12 @@ Deno.serve(async (req: Request) => {
     const response = await fetch("https://api.razorpay.com/v1/orders", {
       method: "POST",
       headers: { "Content-Type": "application/json", "Authorization": `Basic ${btoa(`${keyId}:${keySecret}`)}` },
-      body: JSON.stringify({ amount: Math.round(amount * 100), currency: "INR", receipt, notes: { payment_type, reference_id } }),
+      body: JSON.stringify({ amount: Math.round(amount * 100), currency, receipt, notes: { payment_type, reference_id } }),
     })
     const order = await response.json()
     if (!response.ok) return json({ error: order.error?.description || "Order creation failed" }, 502)
 
-    await admin.from('payments').insert({ payment_type, reference_id, user_id: (record as Record<string, unknown>).devotee_id || null, razorpay_order_id: order.id, razorpay_payment_id: '', razorpay_signature: '', amount, currency: 'INR', payment_status: 'created', paid_at: null })
+    await admin.from('payments').insert({ payment_type, reference_id, user_id: (record as Record<string, unknown>).devotee_id || null, razorpay_order_id: order.id, razorpay_payment_id: '', razorpay_signature: '', amount, currency, payment_status: 'created', paid_at: null })
     return json({ ...order, key_id: keyId })
   } catch (error) {
     return json({ error: (error as Error).message }, 500)
