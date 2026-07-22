@@ -166,7 +166,7 @@ export default function EventDetailPage() {
             <div className="mb-4 rounded-2xl border border-temple-border p-3">
               <div className="flex items-center gap-2 font-semibold text-sm text-temple-text mb-2"><Ticket size={15} /> Select a plan</div>
               {availableMarkets.length > 1 && <div className="grid grid-cols-2 rounded-lg bg-cream-100 p-1 mb-3" role="tablist" aria-label="Plan region">
-                {availableMarkets.map(market => <button key={market} type="button" role="tab" aria-selected={planMarket === market} onClick={() => selectMarket(market)} className={`rounded-md px-2 py-1.5 text-xs font-semibold transition-colors ${planMarket === market ? 'bg-white text-vermilion-700 shadow-sm' : 'text-temple-muted hover:text-temple-text'}`}>
+                {availableMarkets.map(market => <button key={market} type="button" role="tab" aria-selected={planMarket === market} onClick={() => selectMarket(market)} className={`rounded-md px-2 py-1.5 text-xs font-semibold transition-colors ${planMarket === market ? 'bg-temple-text text-white shadow-sm' : 'text-temple-muted hover:text-temple-text'}`}>
                   {market === 'india' ? 'India' : 'International'}
                 </button>)}
               </div>}
